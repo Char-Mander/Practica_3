@@ -11,8 +11,7 @@ var game = function () {
         imagesPath: "images/",
         audioPath: "audio/",
         dataPath: "data/",
-    }
-    )
+    })
         .include("Scenes, Sprites, Input, UI, Touch")
         // Maximize this game to whatever the size of the browser is
         .setup({
@@ -30,6 +29,11 @@ var game = function () {
         }
     };
 
+    Q.preload("sprites.png");
+        Q.preload([ "coin.mp3", "music_die.mp3", "music_level_complete.mp3", "music_main.mp3" ]);
+        Q.preload(function() {
+            // Go time
+        });
     // ## Player Sprite
     // The very basic player sprite, this is just a normal sprite
     // using the player sprite sheet with default controls added to it.
@@ -155,7 +159,6 @@ var game = function () {
         "mainTitle.png", "mario_small.json", "mario_small.png", "princess.png", "tiles.png",
         function () {
             // Sprites sheets can be created manually
-            //Q.sheet("tiles","tiles.png", { tilew: 32, tileh: 32 });
             // Or from a .json asset that defines sprite locations
             Q.compileSheets("mario_small.png", "mario_small.json");
             Q.compileSheets("coin.png", "coin.json");
@@ -165,6 +168,11 @@ var game = function () {
             Q.stageScene("level1");
         });
 
+    Q.load("level.tmx", function(){
+
+    });  
+
+        
 }
 
 
