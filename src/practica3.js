@@ -21,17 +21,17 @@ var game = function () {
         .touch()
         .enableSound();
 
-  /*  Quintus.Random = function (Q) {
-        Q.random = function (min, max) {
-            return min + Math.random() * (max - min);
-        }
-    };*/
-/*
-    Q.preload("sprites.png");
-        Q.preload([ "coin.mp3", "music_die.mp3", "music_level_complete.mp3", "music_main.mp3" ]);
-        Q.preload(function() {
-            // Go time
-        });*/
+    /*  Quintus.Random = function (Q) {
+          Q.random = function (min, max) {
+              return min + Math.random() * (max - min);
+          }
+      };*/
+    /*
+        Q.preload("sprites.png");
+            Q.preload([ "coin.mp3", "music_die.mp3", "music_level_complete.mp3", "music_main.mp3" ]);
+            Q.preload(function() {
+                // Go time
+            });*/
 
 
 
@@ -49,16 +49,16 @@ var game = function () {
             Q.compileSheets("bloopa.png", "bloopa.json");
             Q.compileSheets("goomba.png", "goomba.json");
             // Finally, call stageScene to run the game
-         
-         //   Q.stageScene("level1");
+
+            //   Q.stageScene("level1");
         });
 
-   /* Q.load("level.tmx", function(){
+    /* Q.load("level.tmx", function(){
+ 
+     });  
+ */
 
-    });  
-*/
-        
-}
+
 
     // ## Player Sprite
     // The very basic player sprite, this is just a normal sprite
@@ -182,4 +182,4 @@ var game = function () {
 
 
 
-
+}
