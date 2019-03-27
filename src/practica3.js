@@ -8,13 +8,16 @@ var game = function () {
     // includes the`TileLayer`class as well as the`2d`componet.
     var Q = window.Q = Quintus({
         development:true,
-        width:   320,
-        height:  480,
+        imagesPath: "images/",
+        audioPath: "audio/",
+        dataPath: "data/",
         }
         )
         .include("Scenes, Sprites, Input, UI, Touch")
         // Maximize this game to whatever the size of the browser is
-        .setup({ maximize: true })
+        .setup({   
+            width:   320,
+            height:  480, })
         // And turn on default input controls and touch input (for UI)
         .controls()
         .touch()
