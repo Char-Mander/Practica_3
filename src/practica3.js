@@ -147,11 +147,16 @@ container.fit(20);
 // Q.load can be called at any time to load additional assets
 // assets that are already loaded will be skipped
 // The callback will be triggered when everything is loaded
-Q.load("sprites.png, sprites.json, level.json, tiles.png, background-wall.png",function() {
+Q.load("bg.png", "bloopa.json", "bloopa.png", "coin.json", "coin.png", "goomba.json", "goomba.png", 
+"mainTitle.png", "mario_small.json", "mario_small.png", "princess.png", "tiles.png",
+function() {
     // Sprites sheets can be created manually
-    Q.sheet("tiles","tiles.png", { tilew: 32, tileh: 32 });
+    //Q.sheet("tiles","tiles.png", { tilew: 32, tileh: 32 });
     // Or from a .json asset that defines sprite locations
-    Q.compileSheets("sprites.png","sprites.json");
+    Q.compileSheets("mario_small.png","mario_small.json");
+    Q.compileSheets("coin.png","coin.json");
+    Q.compileSheets("bloopa.png","bloopa.json");
+    Q.compileSheets("goomba.png","goomba.json");
     // Finally, call stageScene to run the game
     Q.stageScene("level1");
 });
