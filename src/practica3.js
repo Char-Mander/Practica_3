@@ -1,7 +1,5 @@
 //Código de la práctica 3
 
-
-
 var game = function () {
     // Set up an instance of the Quintus engine and include
     // the Sprites, Scenes, Input and 2D module. The 2D module
@@ -28,12 +26,14 @@ var game = function () {
             return min + Math.random() * (max - min);
         }
     };
-
+/*
     Q.preload("sprites.png");
         Q.preload([ "coin.mp3", "music_die.mp3", "music_level_complete.mp3", "music_main.mp3" ]);
         Q.preload(function() {
             // Go time
-        });
+        });*/
+
+
     // ## Player Sprite
     // The very basic player sprite, this is just a normal sprite
     // using the player sprite sheet with default controls added to it.
@@ -66,6 +66,8 @@ var game = function () {
             });
         }
     });
+
+    var player1 = new Q.Player();
 
     // ## Tower Sprite
     // Sprites can be simple, the Tower sprite just sets a custom sprite sheet
