@@ -21,11 +21,11 @@ var game = function () {
         .touch()
         .enableSound();
 
-    Quintus.Random = function (Q) {
+  /*  Quintus.Random = function (Q) {
         Q.random = function (min, max) {
             return min + Math.random() * (max - min);
         }
-    };
+    };*/
 /*
     Q.preload("sprites.png");
         Q.preload([ "coin.mp3", "music_die.mp3", "music_level_complete.mp3", "music_main.mp3" ]);
@@ -33,6 +33,32 @@ var game = function () {
             // Go time
         });*/
 
+
+
+    // ## Asset Loading and Game Launch
+    // Q.load can be called at any time to load additional assets
+    // assets that are already loaded will be skipped
+    // The callback will be triggered when everything is loaded
+    Q.load("bg.png", "bloopa.json", "bloopa.png", "coin.json", "coin.png", "goomba.json", "goomba.png",
+        "mainTitle.png", "mario_small.json", "mario_small.png", "princess.png", "tiles.png",
+        function () {
+            // Sprites sheets can be created manually
+            // Or from a .json asset that defines sprite locations
+            Q.compileSheets("mario_small.png", "mario_small.json");
+            Q.compileSheets("coin.png", "coin.json");
+            Q.compileSheets("bloopa.png", "bloopa.json");
+            Q.compileSheets("goomba.png", "goomba.json");
+            // Finally, call stageScene to run the game
+         
+         //   Q.stageScene("level1");
+        });
+
+   /* Q.load("level.tmx", function(){
+
+    });  
+*/
+        
+}
 
     // ## Player Sprite
     // The very basic player sprite, this is just a normal sprite
@@ -153,29 +179,7 @@ var game = function () {
     });
 
 
-    // ## Asset Loading and Game Launch
-    // Q.load can be called at any time to load additional assets
-    // assets that are already loaded will be skipped
-    // The callback will be triggered when everything is loaded
-    Q.load("bg.png", "bloopa.json", "bloopa.png", "coin.json", "coin.png", "goomba.json", "goomba.png",
-        "mainTitle.png", "mario_small.json", "mario_small.png", "princess.png", "tiles.png",
-        function () {
-            // Sprites sheets can be created manually
-            // Or from a .json asset that defines sprite locations
-            Q.compileSheets("mario_small.png", "mario_small.json");
-            Q.compileSheets("coin.png", "coin.json");
-            Q.compileSheets("bloopa.png", "bloopa.json");
-            Q.compileSheets("goomba.png", "goomba.json");
-            // Finally, call stageScene to run the game
-            Q.stageScene("level1");
-        });
 
-    Q.load("level.tmx", function(){
-
-    });  
-
-        
-}
 
 
 
