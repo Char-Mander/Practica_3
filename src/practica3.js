@@ -1,6 +1,6 @@
 //Código de la práctica 3
 
-window.addEventListener('load', function () {
+var game =  function () {
     // Set up an instance of the Quintus engine and include
     // the Sprites, Scenes, Input and 2D module. The 2D module
     // includes the`TileLayer`class as well as the`2d`componet.
@@ -41,7 +41,7 @@ window.addEventListener('load', function () {
     // Q.load can be called at any time to load additional assets
     // assets that are already loaded will be skipped
     // The callback will be triggered when everything is loaded
-    Q.loadTMX("bg.png, bloopa.json, bloopa.png, coin.json, coin.mp3, coin.png, goomba.json, " + 
+    Q.load("bg.png, bloopa.json, bloopa.png, coin.json, coin.mp3, coin.png, goomba.json, " + 
     "goomba.png, level.tmx, mainTitle.png, mario_small.json, mario_small.png, music_main.mp3, " +
     "music_die.mp3, music_level_complete.mp3, princess.png, tiles.png",
         function () {
@@ -54,7 +54,7 @@ window.addEventListener('load', function () {
             Q.stageScene("mainTitle");
             // Finally, call stageScene to run the game
 
-            //   Q.stageScene("level1");
+            Q.stageScene("level1");
         });
 
        /* loadMario(Q);
@@ -200,4 +200,4 @@ window.addEventListener('load', function () {
 
 */
 
-});
+}
