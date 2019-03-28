@@ -1,21 +1,22 @@
 //Código de la práctica 3
 
-var game = function () {
+windows.addEventListener('load', function () {
     // Set up an instance of the Quintus engine and include
     // the Sprites, Scenes, Input and 2D module. The 2D module
     // includes the`TileLayer`class as well as the`2d`componet.
     console.log("entra");
     var Q = window.Q = Quintus({
+        audioSupported: ['mp3', 'ogg'],
         development: true,
-        imagesPath: "images/",
-        audioPath: "audio/",
-        dataPath: "data/",
+        imagesPath: "/images/",
+        audioPath: "/audio/",
+        dataPath: "/data/",
     })
-        .include("Scenes, Sprites, Input, UI, Touch")
+        .include("scenes, sprites, input, ui, touch")
         // Maximize this game to whatever the size of the browser is
         .setup({
             width: 320,
-            height: 480,
+            height: 480
         })
         // And turn on default input controls and touch input (for UI)
         .controls()
@@ -40,8 +41,9 @@ var game = function () {
     // Q.load can be called at any time to load additional assets
     // assets that are already loaded will be skipped
     // The callback will be triggered when everything is loaded
-    Q.load("bg.png", "bloopa.json", "bloopa.png", "coin.json", "coin.png", "goomba.json", "goomba.png",
-        "mainTitle.png", "mario_small.json", "mario_small.png", "princess.png", "tiles.png",
+    Q.loadTMX("bg.png, bloopa.json, bloopa.png, coin.json, coin.mp3, coin.png, goomba.json, " + 
+    "goomba.png, level.tmx, mainTitle.png, mario_small.json, mario_small.png, music_main.mp3, " +
+    "music_die.mp3, music_level_complete.mp3, princess.png, tiles.png",
         function () {
             // Sprites sheets can be created manually
             // Or from a .json asset that defines sprite locations
@@ -49,11 +51,26 @@ var game = function () {
             Q.compileSheets("coin.png", "coin.json");
             Q.compileSheets("bloopa.png", "bloopa.json");
             Q.compileSheets("goomba.png", "goomba.json");
+            Q.stageScene("mainTitle");
             // Finally, call stageScene to run the game
 
             //   Q.stageScene("level1");
         });
 
+       /* loadMario(Q);
+        loadPrincessPeach(Q);
+    
+        loadDefaultEnemy(Q);
+        loadGoomba(Q);
+        loadBloopa(Q);
+    
+        loadCoin(Q);
+    
+        loadEndGame(Q);
+        loadMainTitle(Q);
+        loadHUB(Q);
+    
+        loadLevel1(Q);*/
     /* Q.load("level.tmx", function(){
  
      });  
@@ -64,7 +81,7 @@ var game = function () {
     // ## Player Sprite
     // The very basic player sprite, this is just a normal sprite
     // using the player sprite sheet with default controls added to it.
-    Q.Sprite.extend("Player", {
+   /* Q.Sprite.extend("Player", {
         // the init constructor is called on creation
         init: function (p) {
             // You can call the parent's constructor with this._super(..)
@@ -181,6 +198,6 @@ var game = function () {
 
 
 
+*/
 
-
-}
+});
