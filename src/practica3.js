@@ -1,15 +1,16 @@
 //Código de la práctica 3
 
 var game = function () {
+
+
     // Set up an instance of the Quintus engine and include
     // the Sprites, Scenes, Input and 2D module. The 2D module
     // includes the`TileLayer`class as well as the`2d`componet.
-
     var Q = window.Q = Quintus({
         audioSupported: ['mp3'],
         development: true,
     })
-        .include('Scenes, Sprites, Input, UI, Touch, Audio, Anim, 2D')
+        .include('Scenes, Sprites, Input, UI, Touch, Audio, Anim, 2D, TMX')
         // Maximize this game to whatever the size of the browser is
         .setup({
             width: 320,
@@ -20,26 +21,14 @@ var game = function () {
         .touch()
         .enableSound();
 
-    /*  Quintus.Random = function (Q) {
-          Q.random = function (min, max) {
-              return min + Math.random() * (max - min);
-          }
-      };*/
-    /*
-        Q.preload("sprites.png");
-            Q.preload([ "coin.mp3", "music_die.mp3", "music_level_complete.mp3", "music_main.mp3" ]);
-            Q.preload(function() {
-                // Go time
-            });*/
-
 
 
     // ## Asset Loading and Game Launch
     // Q.load can be called at any time to load additional assets
     // assets that are already loaded will be skipped
     // The callback will be triggered when everything is loaded coin.mp3,  level.tmx, music_main.mp3, music_die.mp3, music_level_complete.mp3,
-    Q.load("bg.png, bloopa.json, bloopa.png, coin.png, coin.json, goomba.json, goomba.png, " +
-        "mainTitle.png, mario_small.json, mario_small.png, princess.png, tiles.png",
+    Q.load(["bg.png", "bloopa.json", "bloopa.png", "coin.png", "coin.json", "goomba.json", "goomba.png",
+        "mainTitle.png", "mario_small.json", "mario_small.png", "princess.png", "tiles.png"], 
         function () {
             // Sprites sheets can be created manually
             // Or from a .json asset that defines sprite locations
