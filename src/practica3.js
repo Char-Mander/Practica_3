@@ -125,43 +125,38 @@ var game = function () {
                 this.p.x = touch.origX + touch.dx;
                 this.p.y = touch.origY + touch.dy;
             },
-            
+            /*
             step: function (dt) {
                 if (this.p.died) {
                     this.play('death');
-                   // this.p.speed = 0;
-                   // this.p.jumpSpeed = 0;
+                    this.p.speed = 0;
+                    this.p.jumpSpeed = 0;
                 } else {
-                    if(this.p.vx > 0) {
-                        this.play("walk_right");
-                        } else if(this.p.vx < 0) {
-                        this.play("walk_left");
+                    if (this.p.movement) {
+                        if (this.p.vy !== 0) {
+                            this.play('jump_' + this.p.direction);
+                        } else if (this.p.vx !== 0) {
+                            this.play('walk_' + this.p.direction);
                         } else {
-                        this.play("stand_" + this.p.direction);
-                        this.p.speed = 0;
-                        this.p.jumpSpeed = 0;
+                            this.play('stand_' + this.p.direction);
                         }
     
-                         /* if(this.p.y > escenario){
+                          if(this.p.y > escenario){
                               this.trigger('death');
-                          }*/
-                    
+                          }
+                    }
+    
+                    else {
+                        this.play('stand_right');
+                        this.p.speed = 0;
+                        this.p.jumpSpeed = 0;
+                    }
                 }
-            }
+            }*/
         });
 
 
-      //Animación de Mario
-    
-      Q.animations('mario animation', {
-        'walk_right': { frames: [1, 2, 3], rate: 1 / 7 },
-        'walk_left': { frames: [15, 16, 17], rate: 1 / 7 },
-        'stand_right': { frames: [0], loop: false },
-        'stand_left': { frames: [14], loop: false },
-        'jump_right': { frames: [4], loop: false },
-        'jump_left': { frames: [18], loop: false },
-        'death': { frames: [12], loop: true }
-    });  
+        
 
 
 
@@ -217,6 +212,17 @@ var game = function () {
         title.fit(20);
     });
 
+//----------------------------------------------------          NIVEL BÁSICO          ----------------------------------------------------//
+
+    Q.scene("level1", function (stage) {
+        Q.stageTMX("level.tmx", stage);
+        Q.audio.play('music_main.mp3', { loop: true });
+        stage.add("viewport").centerOn(160, 370);
+        var player = stage.insert(new Q.Mario());
+        stage.add("viewport").follow(player, { x: true, y: false });
+       // stage.add("viewport").follow(Q("Mario").first());
+        
+        // stage.add("viewport");
 
     //----------------------------------------------------  PANTALLA FIN DEL JUEGO  ----------------------------------------------------//
     Q.scene('endGame', function (stage) {
