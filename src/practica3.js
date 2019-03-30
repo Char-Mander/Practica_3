@@ -177,7 +177,6 @@ var game = function () {
     });
 
 
-    //Animación de Mario
 
     Q.animations('mario_animation', {
         'walk_right': { frames: [1, 2, 3], rate: 1 / 7 },
@@ -191,6 +190,17 @@ var game = function () {
         'death': { frames: [12], loop: true }
     });
 
+//----------------------------------------------------          NIVEL BÁSICO          ----------------------------------------------------//
+
+    Q.scene("level1", function (stage) {
+        Q.stageTMX("level.tmx", stage);
+        Q.audio.play('music_main.mp3', { loop: true });
+        stage.add("viewport").centerOn(160, 370);
+        var player = stage.insert(new Q.Mario());
+        stage.add("viewport").follow(player, { x: true, y: false });
+       // stage.add("viewport").follow(Q("Mario").first());
+        
+        // stage.add("viewport");
 
 
 
@@ -320,8 +330,8 @@ var game = function () {
     Q.scene('endGame', function (stage) {
 
         var win;
-        if (Q.state.get("lives") > 0) { win = "PLAY AGAIN"; }
-        else { win = "GAME OVER" }
+       // if (Q.state.get("lives") > 0) { win = "PLAY AGAIN"; }
+        /*else {*/ win = "GAME OVER"; //}
 
         var container = stage.insert(new Q.UI.Container({
             x: Q.width / 2, y: Q.height / 2, fill: "rgba(0,0,0,0.5)"
