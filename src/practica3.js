@@ -103,20 +103,7 @@ var game = function () {
                     Q.audio.play('music_level_complete.mp3');
                     Q.stageScene('endGame', 1, { label: 'You win!' });
                 }
-                /* else {
-                     Q.audio.stop('music_main.mp3');
-                     if (!this.p.died) {
-                         Q.audio.play('music_die.mp3');
-                     }
-                     this.p.died = true;
-                     this.p.movement = false;
-                     this.p.speed = 0;
-                     this.p.jumpSpeed = 0;
-                     this.animate({ y: this.p.y - 100, angle: 0 }, 0.3);
-                     this.animate({ x: this.p.x, y: 0, angle: 0 }, 0.5);
-                     this.destroy();
-                     Q.stageScene('endGame', 1, { label: 'Game Over' });
-                 }*/
+                
             });
         },
 
@@ -142,10 +129,6 @@ var game = function () {
                 else {
                     this.play("stand_" + this.p.direction);
                 }
-
-                /* if(this.p.y > escenario){
-                     this.trigger('death');
-                 }*/
 
             }
         },
@@ -202,7 +185,7 @@ var game = function () {
         init: function (p) {
             this._super(p, { 
             asset: 'princess.png',
-            x: 2000,
+            x: 500,
             y: 380    
             });
         }
@@ -237,9 +220,9 @@ var game = function () {
             // and give the user a "hop"
             this.on("bump.top", function (collision) {
                 if (collision.obj.isA("Mario")) {
-                    4
-                    this.destroy();
+                    this.play('death');
                     collision.obj.p.vy = -300;
+                    this.destroy();
                 }
             });
 
@@ -248,7 +231,7 @@ var game = function () {
             
         step: function(dt){
             if(this.p.vx != 0 && !this.died){
-                this.play("walk_" + this.p.direction);
+                this.play('walk');
             }
         }
 
@@ -260,8 +243,7 @@ var game = function () {
     //Animación de Goomba
 
     Q.animations('goomba_animation', {
-        'walk_right': { frames: [0, 1], rate: 1 / 3, flip: 'x' },
-        'walk_left': { frames: [0, 1], rate: 1 / 3, flip: false },
+        'walk': { frames: [0, 1], rate: 1 / 3},
         'death': { frames: [2], rate: 1 / 3, loop: false }
     });
 
@@ -276,7 +258,7 @@ var game = function () {
     //----------------------------------------------------  CARGA DE LA PANTALLA INICIAL  ----------------------------------------------------//
 
     Q.loadTMX("level.tmx", function () {
-        Q.stageScene("level1");
+        Q.stageScene("mainTitle");
         //Q.stageScene("mainTitle");
         //stage.add("viewport");
         //stage.viewport.offsetX = -100;
@@ -291,11 +273,7 @@ var game = function () {
         stage.add("viewport").centerOn(160, 370);
         var player = stage.insert(new Q.Mario());
         stage.add("viewport").follow(player, { x: true, y: false });
-        //  stage.viewport.offsetX = -100;
-        // stage.viewport.offsetY = 160;
-        // stage.add("viewport").follow(Q("Mario").first());
-
-        // stage.add("viewport");
+        
 
     });
 
@@ -343,133 +321,6 @@ var game = function () {
         // (with a padding of 20 pixels)
         container.fit(20);
     });
-
-
-    /*
-    
-        // ## Mario Sprite
-        // The very basic player sprite, this is just a normal sprite
-        // using the player sprite sheet with default controls added to it.
-        Q.Sprite.extend("Mario", {
-            // the init constructor is called on creation
-            init: function (p) {
-                // You can call the parent's constructor with this._super(..)
-                this._super(p, {
-                    sprite: 'mario animation',
-                    sheet: "mario",
-                    x: 150, // You can also set additional properties that can
-                    y: 380, // be overridden on object creation
-                    direction: 'right',
-                    jumpSpeed: -400,
-                    speed: 200,
-                    vy: 10,
-                    died: false,
-                    movement: true
-    
-                });
-                // Add in pre-made components to get up and running quickly
-                // The `2d` component adds in default 2d collision detection
-                // and kinetics (velocity, gravity)
-                // The `platformerControls` makes the player controllable by the
-                // default input actions (left, right to move, up or action to jump)
-                // It also checks to make sure the player is on a horizontal surface before
-                // letting them jump.
-                this.add('2d, platformerControls, animation, tween');
-                this.on("drag");
-    
-    
-                // Write event handlers to respond hook into behaviors.
-    
-                // hit.sprite is called everytime the player collides with a sprite
-                this.on("hit.sprite", function (collision) {
-                    // Check the collision, if it's the Tower, you win!
-                    if (collision.obj.isA("Princess")) {
-                        this.p.movement = false;
-                        Q.audio.stop('music_main.mp3');
-                        Q.audio.play('music_level_complete.mp3');
-                        Q.stageScene('endGame', 1, { label: 'You win!' });
-                    }
-                    else {
-                        Q.audio.stop('music_main.mp3');
-                        if (!this.p.died) {
-                            Q.audio.play('music_die.mp3');
-                        }
-                        this.p.died = true;
-                        this.p.movement = false;
-                        this.p.speed = 0;
-                        this.p.jumpSpeed = 0;
-                        this.animate({ y: this.p.y - 100, angle: 0 }, 0.3);
-                        this.animate({ x: this.p.x, y: 0, angle: 0 }, 0.5);
-                        this.destroy();
-                        Q.stageScene('endGame', 1, { label: 'Game Over' });
-                    }
-                });
-            },
-    
-            drag: function (touch) {
-                this.p.x = touch.origX + touch.dx;
-                this.p.y = touch.origY + touch.dy;
-            },
-    
-            step: function (dt) {
-                if (this.p.died) {
-                    this.play('death');
-                    this.p.speed = 0;
-                    this.p.jumpSpeed = 0;
-                } else {
-                    if (this.p.movement) {
-                        if (this.p.vy !== 0) {
-                            this.play('jump_' + this.p.direction);
-                        } else if (this.p.vx !== 0) {
-                            this.play('walk_' + this.p.direction);
-                        } else {
-                            this.play('stand_' + this.p.direction);
-                        }
-    
-                          if(this.p.y > escenario){
-                              this.trigger('death');
-                          }
-                    }
-    
-                    else {
-                        this.play('stand_right');
-                        this.p.speed = 0;
-                        this.p.jumpSpeed = 0;
-                    }
-                }
-            }
-        });
-    
-        //var mario = new Q.Mario();
-    
-        //Animación de Mario
-    
-        Q.animations('mario animation', {
-            'walk_right': { frames: [1, 2, 3], rate: 1 / 7 },
-            'walk_left': { frames: [15, 16, 17], rate: 1 / 7 },
-            'stand_right': { frames: [0], loop: false },
-            'stand_left': { frames: [14], loop: false },
-            'jump_right': { frames: [4], loop: false },
-            'jump_left': { frames: [18], loop: false },
-            'death': { frames: [12], loop: true }
-        });
-    
-    
-        // ## Princess Sprite
-        // Sprites can be simple, the Princess sprite just sets a custom sprite sheet
-        Q.Sprite.extend("Princess", {
-            init: function (p) {
-                this._super(p, { sheet: 'princess' });
-            }
-        });
-        
-        var mario = stage.insert(new Q.Mario());
- 
-        // Give the stage a moveable viewport and tell it
-        // to follow the mario.
-        stage.add("viewport").follow(mario);
- 
-    */
 
     /*
     // ## Enemy Sprite
