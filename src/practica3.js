@@ -23,7 +23,7 @@ var Q = window.Q = Quintus({development: true})
 	Q.load(["tiles.png", "bg.png", "bloopa.png", "bloopa.json", "coin.png","coin.json", "goomba.png","goomba.json",
 		"mainTitle.png", "mario_small.png","mario_small.json", "princess.png"], function() {
 
-		Q.stageScene("startGame", 2);
+		Q.stageScene("startGame", 1);
 		// Or from a .json asset that defines sprite locations
 		Q.compileSheets("bloopa.png", "bloopa.json");
 		Q.compileSheets("coin.png","coin.json");
@@ -58,6 +58,8 @@ var Q = window.Q = Quintus({development: true})
 			this.on("hit.sprite",function(collision) {
 					if(collision.obj.isA("Princess")) {
 						Q.stageScene("endGame",1, { label: "You Won!" });
+					}else{
+						this.play("die");
 					}
 					
 			});
@@ -86,13 +88,28 @@ var Q = window.Q = Quintus({development: true})
 	});
 
 
-	// ## Tower Sprite
-	// Sprites can be simple, the Tower sprite just sets a custom sprite sheet
-	Q.Sprite.extend("Tower", {
+	// ## Coin sprite
+	Q.Sprite.extend("Coin", {
 		init: function(p) {
-			this._super(p, { sheet: 'tower' });
+			this._super(p, { 
+				sheet: 'coin',
+				sprite: 'coin_anim', 
+				gravity: 0 
+			});
+		
+
+		this.add('2d,animation');
+				// Write event handlers to respond hook into behaviors
+
+			this.on("hit.sprite",function(collision) {
+					if(collision.obj.isA("Player")) {
+						this.play("catch");
+						this.vy = -20;
+					}	
+			});
 		}
 	});
+
 
 	// Sprite del titulo
 	Q.Sprite.extend("Title", {
@@ -113,19 +130,15 @@ var Q = window.Q = Quintus({development: true})
 				vy: -10,
 				gravity:0 }); //gravity: 0
 
-				// Enemies use the Bounce AI to change direction
-				// whenver they run into something.
 				this.add('2d, bump, aiBounce, animation');
-				// Listen for a sprite collision, if it's the player,
-				// end the game unless the enemy is hit on top
+			
 				this.on("bump.left, bump.right,bump.bottom",function(collision) {
 					if(collision.obj.isA("Player")) {
-						Q.stageScene("endGame",1, { label: "You Died" });
+						Q.stageScene("endGame",1, { label: "Game Over" });
 						collision.obj.destroy();
 					}
 				});
-				// If the enemy gets hit on the top, destroy it
-				// and give the user a "hop"
+				
 				this.on("bump.top",function(collision) {
 					if(collision.obj.isA("Player")) {
 						this.destroy();
@@ -207,6 +220,26 @@ var Q = window.Q = Quintus({development: true})
 		stage.insert(new Q.Goomba({x:1500, y:450}));
 		stage.insert(new Q.Princess({x:2000, y:350}));
 
+		stage.insert(new Q.Coin({x:450, y:450}));
+		stage.insert(new Q.Coin({x:470, y:450}));
+		stage.insert(new Q.Coin({x:500, y:450}));
+
+		stage.insert(new Q.Coin({x:960, y:470}));
+		stage.insert(new Q.Coin({x:990, y:490}));
+		stage.insert(new Q.Coin({x:1020, y:490}));
+		stage.insert(new Q.Coin({x:1050, y:490}));
+		stage.insert(new Q.Coin({x:1080, y:470}));
+
+		stage.insert(new Q.Coin({x:1120, y:490}));
+		stage.insert(new Q.Coin({x:1150, y:470}));
+		stage.insert(new Q.Coin({x:1180, y:490}));
+		stage.insert(new Q.Coin({x:1210, y:470}));
+		//stage.insert(new Q.Coin({x:1240, y:490}));
+
+		stage.insert(new Q.Coin({x:1400, y:400}));
+		stage.insert(new Q.Coin({x:1420, y:400}));
+		stage.insert(new Q.Coin({x:1440, y:400}));
+
 	});
 
 	
@@ -239,12 +272,13 @@ var Q = window.Q = Quintus({development: true})
 			var label = container.insert(new Q.UI.Text({x:10, y: -10 - button.p.h,
 				label: stage.options.label }));
 
-			// When the button is clicked, clear all the stages
-			// and restart the game.
 			button.on("click",function() {
 				Q.clearStages();
-				Q.stageScene('level1');
+				//Q.stageScene('level1');
+				Q.stageScene('startGame', 1);
 			});
+
+		//O si coge el evento de intro.
 
 		// Expand the container to visibily fit it's contents
 		// (with a padding of 20 pixels)
@@ -282,6 +316,13 @@ var Q = window.Q = Quintus({development: true})
 		walk: { frames: [0,1], rate: 1/5,
 					  flip: false, loop: true },
 		die: { frames: [2], loop: false }
+	});
+
+
+	//Animacion de COIN
+	Q.animations("coin_anim", {
+		catch: { frames: [1,2], rate: 1/15,
+					  flip: false, loop: true }
 	});
 
 
