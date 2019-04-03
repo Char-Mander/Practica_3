@@ -16,10 +16,6 @@ var Q = window.Q = Quintus({development: true})
 
 
 	// ## Asset Loading and Game Launch
-
-	// Q.load can be called at any time to load additional assets
-	// assets that are already loaded will be skipped
-	// The callback will be triggered when everything is loaded
 	Q.load(["tiles.png", "bg.png", "bloopa.png", "bloopa.json", "coin.png","coin.json", "goomba.png","goomba.json",
 		"mainTitle.png", "mario_small.png","mario_small.json", "princess.png"], function() {
 
@@ -29,20 +25,18 @@ var Q = window.Q = Quintus({development: true})
 		Q.compileSheets("coin.png","coin.json");
 		Q.compileSheets("goomba.png","goomba.json");
 		Q.compileSheets("mario_small.png","mario_small.json");
-		
-
-
-		
+			
 	});
 
+
+	//Carga de audios
 	Q.load(["coin.mp3", "music_die.mp3", "music_level_complete.mp3", "music_main.mp3"], function () { });
+
 	// ## Player Sprite
-	// The very basic player sprite, this is just a normal sprite
-	// using the player sprite sheet with default controls added to it.
 	Q.Sprite.extend("Player",{
-		// the init constructor is called on creation
+		
 		init: function(p) {
-			// You can call the parent's constructor with this._super(..)
+			
 			this._super(p, {
 					sprite: "mario_anim",
 					sheet: "marioR", // Setting a sprite sheet sets sprite width and height
@@ -53,48 +47,38 @@ var Q = window.Q = Quintus({development: true})
 				});
 
 			this.add('2d, platformerControls, animation');
-				// Write event handlers to respond hook into behaviors
-
-			//this.step(){}
 
 			this.on("hit.sprite",function(collision) {
 					if(collision.obj.isA("Princess")) {
 						Q.audio.stop('music_main.mp3');
                     	Q.audio.play('music_level_complete.mp3');
-						Q.stageScene("endGame",1, { label: "You Won!" });
+						Q.stageScene("endGame",1, { label: "You Win!" });
 					}
 			});
-		}, //Cuidado, cada cosa que se defina como step, con una coma al final del parentesis
-
+		}, 
 		step: function(dt){
 
-			if(this.p.y > 650){
-				this.die();
-			}
-
-			if(this.p.died){
-					this.play('die')
-			} else{
-				if(this.p.vy < 0){
+			if(this.p.y > 530){ this.die(); } //Hay que ver como destruirlo despues de mostrar la animacion de muerte
+			else {
+				if( (this.p.vx > 0 && this.p.vy < 0) || (this.p.vx < 0 && this.p.vy < 0) || this.p.vy < 0){
 					this.play("jump_" + this.p.direction);
 				}else if(this.p.vy > 0){
 					this.play("smash_" + this.p.direction);
-				}if (this.p.vx != 0) {
-					this.play("walk_" + this.p.direction);
-				} else if(this.p.vx === 0 && this.p.vy === 0) {
+				}else if(this.p.vx > 0) {
+					this.play("walk_right");
+				} else if(this.p.vx < 0) {
+					this.play("walk_left");
+				} else {
 					this.play("stand_" + this.p.direction);
 				}
 			}
 		},
 
-		die: function(enemy){
-			if (!this.died) {
-                this.died = true;
-				this.play("die");
-				Q.audio.stop();
-                Q.audio.play("music_die.mp3");
-                Q.stageScene("endGame", 1, { label: "You Died" });
-            }
+		die: function(){
+				Q.audio.stop("music_main.mp3");
+                //Q.audio.play("music_die.mp3"); Para habilitarlo hay que destruirlo primero.
+                this.play("die");
+				//this.destroy();
 		}
 
 	});
@@ -115,13 +99,15 @@ var Q = window.Q = Quintus({development: true})
 
 			this.on("hit.sprite",function(collision) {
 					if(collision.obj.isA("Player")) {
+						Q.audio.play("coin.mp3");
 						this.play("catch");
 						this.p.vy= -200;
+
 						collision.obj.score += 1;
 					}	
 			});
 		},
-		step: function(dt){
+		step:function(dt){
 			if(this.p.y < 200)
 				this.destroy();
 		}
@@ -151,6 +137,9 @@ var Q = window.Q = Quintus({development: true})
 			
 				this.on("bump.left, bump.right,bump.bottom",function(collision) {
 					if(collision.obj.isA("Player")) {
+						Q.audio.play("music_die.mp3");
+						Q.audio.stop("music_main.mp3");
+
 						Q.stageScene("endGame",1, { label: "Game Over" });
 						collision.obj.destroy();
 					}
@@ -158,29 +147,35 @@ var Q = window.Q = Quintus({development: true})
 				
 				this.on("bump.top",function(collision) {
 					if(collision.obj.isA("Player")) {
-						this.destroy();
+						//this.destroy();
+						this.die();
 						collision.obj.p.vy = -300;
 					}
 				});
 			},
 
 			step: function(dt){
-				if(this.p.y < 350) {
-					this.p.vy = 200;
+				if(this.p.y > 550)
+					this.destroy();
+
+				if(this.p.y < 350){
 					this.p.y = 350;
-				}else if(this.p.y > 525){
+					this.p.vy = 200;
+				}
+				else if(this.p.y > 525){
 					this.p.vy = -200;
 					this.p.y = 525;
 				}
 
-
 				this.play("walk");
+			}, 
 
-				
+			die: function(){
+				this.p.vy = 200;
+				this.play("die");
 			}
 		});
 	
-	var finish = false;
 	// Create the GOOMBA class to add in some baddies
 	Q.Sprite.extend("Goomba",{
 		init: function(p) {
@@ -193,19 +188,21 @@ var Q = window.Q = Quintus({development: true})
 				
 				this.on("bump.left,bump.right",function(collision) {
 					if(collision.obj.isA("Player")) {
-						Q.stageScene("endGame",1, { label: "You Died" });
+						Q.audio.play("music_die.mp3");
+						Q.audio.stop("music_main.mp3");
+						
+						Q.stageScene("endGame",1, { label: "Game Over" });
 						collision.obj.destroy();
 					}
 				});
 				
+				var finish = false;
+
 				this.on("bump.top",function(collision) {
 					if(collision.obj.isA("Player")) {
-						this.die(this);
-						if(finish){ 
-							this.destroy();
-							finish = false;
-						}
-						collision.obj.p.vy = -300;
+						this.die();
+						collision.obj.p.vy = -100;
+						this.destroy();
 					}
 				});
 			},
@@ -214,9 +211,9 @@ var Q = window.Q = Quintus({development: true})
 				this.play("walk");
 			},
 
-			die: function(obj){
-				obj.play("die");
-				finish = true;
+			die: function(){
+				this.p.vy = 200;
+				this.play("die");
 			}
 
 	});
@@ -242,15 +239,19 @@ var Q = window.Q = Quintus({development: true})
 	Q.scene("level1",function(stage) {
 
 		Q.stageTMX("level.tmx",stage);
-		Q.audio.play('music_main.mp3', { loop: true });
-		stage.add("viewport").centerOn(160, 360);
-		var player = stage.insert(new Q.Player({x:150, y:380})); 
-		stage.add("viewport").follow(player, { x: true, y: false }); 
+
+		var player = stage.insert(new Q.Player({x:150, y:380}));
+		stage.add("viewport").centerOn(160,360); 
+		stage.add("viewport").follow(player, {x: true, y:false}); 
+		//Que le siga hasta cierto punto
 		stage.viewport.offsetX = -100;
 		stage.viewport.offsetY = 160;
 
+		Q.audio.play('music_main.mp3');
+
+
 		stage.insert(new Q.Bloopa({x:300, y:525}));
-		stage.insert(new Q.Bloopa({x:800, y:400}));
+		stage.insert(new Q.Goomba({x:500, y:525}));
 
 		stage.insert(new Q.Goomba({x:1500, y:450}));
 		stage.insert(new Q.Princess({x:2000, y:350}));
@@ -308,14 +309,10 @@ var Q = window.Q = Quintus({development: true})
 
 			button.on("click",function() {
 				Q.clearStages();
-				//Q.stageScene('level1');
 				Q.stageScene('startGame', 1);
 			});
 
-		//O si coge el evento de intro.
 
-		// Expand the container to visibily fit it's contents
-		// (with a padding of 20 pixels)
 		container.fit(20);
 	});
 
@@ -341,7 +338,7 @@ var Q = window.Q = Quintus({development: true})
 	Q.animations("goomba_anim", {
 		walk: { frames: [0,1], rate: 1/15,
 					  flip: false, loop: true },
-		die: { frames: [2,3], rate: 1/15, loop: false }
+		die: { frames: [2,3], rate: 0.5/3, loop: true }
 	});
 
 
