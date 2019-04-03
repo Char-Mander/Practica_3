@@ -49,6 +49,7 @@ var Q = window.Q = Quintus({development: true})
 					x: 32, // You can also set additional properties that can
 					y: 32, // be overridden on object creation
 					died: false, 
+					score: 0,
 				});
 
 			this.add('2d, platformerControls, animation');
@@ -66,14 +67,23 @@ var Q = window.Q = Quintus({development: true})
 		}, //Cuidado, cada cosa que se defina como step, con una coma al final del parentesis
 
 		step: function(dt){
-			if( (this.p.vx > 0 && this.p.vy < 0) || (this.p.vx < 0 && this.p.vy < 0) || this.p.vy < 0){
-				this.play("jump_" + this.p.direction);
-			}else if(this.p.vy > 0){
-				this.play("smash_" + this.p.direction);
-			}if (this.p.vx != 0) {
-				this.play("walk_" + this.p.direction);
-			} else {
-				this.play("stand_" + this.p.direction);
+
+			if(this.p.y > 650){
+				this.die();
+			}
+
+			if(this.p.died){
+					this.play('die')
+			} else{
+				if(this.p.vy < 0){
+					this.play("jump_" + this.p.direction);
+				}else if(this.p.vy > 0){
+					this.play("smash_" + this.p.direction);
+				}if (this.p.vx != 0) {
+					this.play("walk_" + this.p.direction);
+				} else if(this.p.vx === 0 && this.p.vy === 0) {
+					this.play("stand_" + this.p.direction);
+				}
 			}
 		},
 
@@ -96,7 +106,7 @@ var Q = window.Q = Quintus({development: true})
 			this._super(p, { 
 				sheet: 'coin',
 				sprite: 'coin_anim', 
-				gravity: 0 
+				gravity: 0
 			});
 		
 
@@ -105,10 +115,16 @@ var Q = window.Q = Quintus({development: true})
 
 			this.on("hit.sprite",function(collision) {
 					if(collision.obj.isA("Player")) {
-						this.play("catch");
-						this.vy = -20;
+						//this.play("catch");
+						//this.vy = -20;
+						collision.obj.score += 1;
+						this.y = -50;
+						this.destroy();
 					}	
 			});
+		},
+		step: function(dt){
+			this.play("catch");
 		}
 	});
 
@@ -129,7 +145,7 @@ var Q = window.Q = Quintus({development: true})
 			this._super(p, { 
 				sprite: "bloopa_anim",
 				sheet: 'bloopa',
-				vy: -10,
+				vy: -200,
 				gravity:0 }); //gravity: 0
 
 				this.add('2d, bump, aiBounce, animation');
@@ -150,9 +166,18 @@ var Q = window.Q = Quintus({development: true})
 			},
 
 			step: function(dt){
-				//if(this.p.y < 400)
-					this.play("walk");
-				//else
+				if(this.p.y < 350) {
+					this.p.vy = 200;
+					this.p.y = 350;
+				}else if(this.p.y > 525){
+					this.p.vy = -200;
+					this.p.y = 525;
+				}
+
+
+				this.play("walk");
+
+				
 			}
 		});
 	
@@ -218,13 +243,16 @@ var Q = window.Q = Quintus({development: true})
 	Q.scene("level1",function(stage) {
 
 		Q.stageTMX("level.tmx",stage);
-
-		var player = stage.insert(new Q.Player({x:150, y:380})); // Create the player and add them to the stage
-		stage.add("viewport").follow(player, { x: true, y: false }); //Para que siga a Mario
+		Q.audio.play('music_main.mp3', { loop: true });
+		stage.add("viewport").centerOn(160, 360);
+		var player = stage.insert(new Q.Player({x:150, y:380})); 
+		stage.add("viewport").follow(player, { x: true, y: false }); 
 		stage.viewport.offsetX = -100;
 		stage.viewport.offsetY = 160;
 
-		stage.insert(new Q.Bloopa({x:300, y:400}));
+		stage.insert(new Q.Bloopa({x:300, y:525}));
+		stage.insert(new Q.Bloopa({x:800, y:400}));
+
 		stage.insert(new Q.Goomba({x:1500, y:450}));
 		stage.insert(new Q.Princess({x:2000, y:350}));
 
@@ -242,7 +270,6 @@ var Q = window.Q = Quintus({development: true})
 		stage.insert(new Q.Coin({x:1150, y:470}));
 		stage.insert(new Q.Coin({x:1180, y:490}));
 		stage.insert(new Q.Coin({x:1210, y:470}));
-		//stage.insert(new Q.Coin({x:1240, y:490}));
 
 		stage.insert(new Q.Coin({x:1400, y:400}));
 		stage.insert(new Q.Coin({x:1420, y:400}));
@@ -329,16 +356,9 @@ var Q = window.Q = Quintus({development: true})
 
 	//Animacion de COIN
 	Q.animations("coin_anim", {
-		catch: { frames: [1,2], rate: 1/15,
-					  flip: false, loop: true }
+		catch: { frames: [0,1,2], rate: 1/3,
+					  flip: false, loop: false }
 	});
-
-
-
-
-
-
-
 
 
 
