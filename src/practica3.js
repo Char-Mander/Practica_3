@@ -32,6 +32,8 @@ var game = function () {
 
 
     // ## Asset Loading and Game Launch
+
+    Q.load(["coin.mp3", "music_die.mp3", "music_level_complete.mp3", "music_main.mp3"], function () { });
     // Q.load can be called at any time to load additional assets
     // assets that are already loaded will be skipped
     // The callback will be triggered when everything is loaded coin.mp3,  level.tmx, music_main.mp3, music_die.mp3, music_level_complete.mp3,
@@ -46,12 +48,9 @@ var game = function () {
             Q.compileSheets("goomba.png", "goomba.json");
 
             Q.stageScene("mainTitle");
-            // Finally, call stageScene to run the game
-
-            Q.stageScene("level1");
         });
 
-    Q.load(["coin.mp3", "music_die.mp3", "music_level_complete.mp3", "music_main.mp3"], function () { });
+   
 
 
 
@@ -185,9 +184,11 @@ var game = function () {
         init: function (p) {
             this._super(p, { 
             asset: 'princess.png',
-            x: 500,
+            x: 200,
             y: 380    
             });
+
+            this.add('2d');
         }
     });
 
@@ -272,6 +273,7 @@ var game = function () {
         Q.audio.play('music_main.mp3', { loop: true });
         stage.add("viewport").centerOn(160, 370);
         var player = stage.insert(new Q.Mario());
+        stage.insert(new Q.Princess());
         stage.add("viewport").follow(player, { x: true, y: false });
         
 
