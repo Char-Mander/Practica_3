@@ -115,16 +115,15 @@ var Q = window.Q = Quintus({development: true})
 
 			this.on("hit.sprite",function(collision) {
 					if(collision.obj.isA("Player")) {
-						//this.play("catch");
-						//this.vy = -20;
+						this.play("catch");
+						this.p.vy= -200;
 						collision.obj.score += 1;
-						this.y = -50;
-						this.destroy();
 					}	
 			});
 		},
 		step: function(dt){
-			this.play("catch");
+			if(this.p.y < 200)
+				this.destroy();
 		}
 	});
 
@@ -356,8 +355,8 @@ var Q = window.Q = Quintus({development: true})
 
 	//Animacion de COIN
 	Q.animations("coin_anim", {
-		catch: { frames: [0,1,2], rate: 1/3,
-					  flip: false, loop: false }
+		catch: { frames: [0,1,2], rate: 0.5/3,
+					  flip: false, loop: true }
 	});
 
 
