@@ -35,7 +35,7 @@ var Q = window.Q = Quintus({development: true})
 		
 	});
 
-
+	Q.load(["coin.mp3", "music_die.mp3", "music_level_complete.mp3", "music_main.mp3"], function () { });
 	// ## Player Sprite
 	// The very basic player sprite, this is just a normal sprite
 	// using the player sprite sheet with default controls added to it.
@@ -48,6 +48,7 @@ var Q = window.Q = Quintus({development: true})
 					sheet: "marioR", // Setting a sprite sheet sets sprite width and height
 					x: 32, // You can also set additional properties that can
 					y: 32, // be overridden on object creation
+					died: false, 
 				});
 
 			this.add('2d, platformerControls, animation');
@@ -57,11 +58,10 @@ var Q = window.Q = Quintus({development: true})
 
 			this.on("hit.sprite",function(collision) {
 					if(collision.obj.isA("Princess")) {
+						Q.audio.stop('music_main.mp3');
+                    	Q.audio.play('music_level_complete.mp3');
 						Q.stageScene("endGame",1, { label: "You Won!" });
-					}else{
-						this.play("die");
 					}
-					
 			});
 		}, //Cuidado, cada cosa que se defina como step, con una coma al final del parentesis
 
@@ -70,19 +70,21 @@ var Q = window.Q = Quintus({development: true})
 				this.play("jump_" + this.p.direction);
 			}else if(this.p.vy > 0){
 				this.play("smash_" + this.p.direction);
-			}else if(this.p.vx > 0) {
-				this.play("walk_right");
-			} else if(this.p.vx < 0) {
-				this.play("walk_left");
+			}if (this.p.vx != 0) {
+				this.play("walk_" + this.p.direction);
 			} else {
 				this.play("stand_" + this.p.direction);
 			}
 		},
 
 		die: function(enemy){
+			if (!this.died) {
+                this.died = true;
 				this.play("die");
-				enemy.destroy();
-				//Falta que se reinicie al caer del escenario
+				Q.audio.stop();
+                Q.audio.play("music_die.mp3");
+                Q.stageScene("endGame", 1, { label: "You Died" });
+            }
 		}
 
 	});
@@ -218,7 +220,7 @@ var Q = window.Q = Quintus({development: true})
 		Q.stageTMX("level.tmx",stage);
 
 		var player = stage.insert(new Q.Player({x:150, y:380})); // Create the player and add them to the stage
-		stage.add("viewport").follow(player); //Para que siga a Mario
+		stage.add("viewport").follow(player, { x: true, y: false }); //Para que siga a Mario
 		stage.viewport.offsetX = -100;
 		stage.viewport.offsetY = 160;
 
