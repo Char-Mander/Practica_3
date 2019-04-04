@@ -102,8 +102,7 @@ var Q = window.Q = Quintus({development: true})
 						Q.audio.play("coin.mp3");
 						this.play("catch");
 						this.p.vy= -200;
-
-						collision.obj.score += 1;
+						collision.obj.p.score += 1;
 					}	
 			});
 		},
@@ -130,11 +129,11 @@ var Q = window.Q = Quintus({development: true})
 			this._super(p, { 
 				sprite: "bloopa_anim",
 				sheet: 'bloopa',
-				vy: -200,
+				vy: -150,
 				gravity:0 }); //gravity: 0
 
-				this.add('2d, bump, aiBounce, animation');
-			
+				this.add('2d, bump, aiBounce, animation, Enemy');
+			/*
 				this.on("bump.left, bump.right,bump.bottom",function(collision) {
 					if(collision.obj.isA("Player")) {
 						Q.audio.play("music_die.mp3");
@@ -151,7 +150,9 @@ var Q = window.Q = Quintus({development: true})
 						this.die();
 						collision.obj.p.vy = -300;
 					}
-				});
+				});*/
+
+				this.on("dead", this, "animation");
 			},
 
 			step: function(dt){
@@ -170,22 +171,23 @@ var Q = window.Q = Quintus({development: true})
 				this.play("walk");
 			}, 
 
+/*
 			die: function(){
 				this.p.vy = 200;
 				this.play("die");
-			}
+			}*/
 		});
 	
 	// Create the GOOMBA class to add in some baddies
 	Q.Sprite.extend("Goomba",{
 		init: function(p) {
 			this._super(p, { 
-				sprite: "goomba_anim",
+				sprite: "goomba_anim", 
 				sheet: 'goomba', 
 				vx: 100 });
 
-				this.add('2d, bump, aiBounce,animation');
-				
+				this.add('2d, bump, aiBounce, animation, Enemy');
+				/*
 				this.on("bump.left,bump.right",function(collision) {
 					if(collision.obj.isA("Player")) {
 						Q.audio.play("music_die.mp3");
@@ -204,20 +206,54 @@ var Q = window.Q = Quintus({development: true})
 						collision.obj.p.vy = -100;
 						this.destroy();
 					}
-				});
+				});*/
 			},
 
 			step: function(dt){
 				this.play("walk");
 			},
-
+/*
 			die: function(){
 				this.p.vy = 200;
 				this.play("die");
-			}
+			}*/
 
 	});
 
+
+	//Componente que tienen en común todos los enemigos
+	Q.component("Enemy",{
+		init: function(p) {
+			
+				this.on("bump.left, bump.right,bump.bottom",function(collision) {
+					if(collision.obj.isA("Player")) {
+						Q.audio.play("music_die.mp3");
+						Q.audio.stop("music_main.mp3");
+						Q.stageScene("endGame",1, { label: "Game Over" });
+						collision.obj.destroy();
+					}
+				});
+				
+				this.on("bump.top",function(collision) {
+					if(collision.obj.isA("Player")) {
+						collision.obj.p.score += 5;
+						this.animation();
+					}
+				});
+
+				this.entity.on("stopAnimation", this.entity, "die");
+			},
+
+			extend: {
+				animation: function(){
+					this.play("die");
+				}, 
+
+				die: function(){
+					this.destroy();
+				}
+			}
+		});
 
 	// ## Princess Sprite, no se muestra
 	Q.Sprite.extend("Princess",{
@@ -336,17 +372,17 @@ var Q = window.Q = Quintus({development: true})
 
 	//Animacion de GOOMBA
 	Q.animations("goomba_anim", {
-		walk: { frames: [0,1], rate: 1/15,
+		walk: { frames: [0,1], rate: 1/3,
 					  flip: false, loop: true },
-		die: { frames: [2,3], rate: 0.5/3, loop: true }
+		die: { frames: [2], rate: 0.5/3, loop: false, trigger: "stopAnimation" }
 	});
 
 
 	//Animacion de BLOOPA
 	Q.animations("bloopa_anim", {
-		walk: { frames: [0,1], rate: 1/5,
+		walk: { frames: [0,1], rate: 1/3,
 					  flip: false, loop: true },
-		die: { frames: [2], loop: false }
+		die: { frames: [2], rate: 1/3, loop: false, trigger: "stopAnimation" }
 	});
 
 
