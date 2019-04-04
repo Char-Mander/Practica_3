@@ -50,6 +50,8 @@ var Q = window.Q = Quintus({development: true})
 
 			this.on("hit.sprite",function(collision) {
 					if(collision.obj.isA("Princess")) {
+						this.vx = 0;
+						this.vy = 0;
 						Q.audio.stop('music_main.mp3');
                     	Q.audio.play('music_level_complete.mp3');
 						Q.stageScene("endGame",1, { label: "You Win!" });
@@ -64,10 +66,8 @@ var Q = window.Q = Quintus({development: true})
 					this.play("jump_" + this.p.direction);
 				}else if(this.p.vy > 0){
 					this.play("smash_" + this.p.direction);
-				}else if(this.p.vx > 0) {
-					this.play("walk_right");
-				} else if(this.p.vx < 0) {
-					this.play("walk_left");
+				}else if(this.p.vx !== 0) {
+					this.play("walk_" + this.p.direction);
 				} else {
 					this.play("stand_" + this.p.direction);
 				}
