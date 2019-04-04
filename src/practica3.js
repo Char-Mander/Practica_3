@@ -94,7 +94,7 @@ var Q = window.Q = Quintus({development: true})
 			});
 		
 
-		this.add('2d,animation');
+		this.add('2d, animation, tween');
 				// Write event handlers to respond hook into behaviors
 
 			this.on("hit.sprite",function(collision) {
