@@ -87,6 +87,7 @@ var Q = window.Q = Quintus({development: true})
 	// ## Coin sprite
 	Q.Sprite.extend("Coin", {
 		init: function(p) {
+			this.touched = false;
 			this._super(p, { 
 				sheet: 'coin',
 				sprite: 'coin_anim', 
@@ -97,18 +98,17 @@ var Q = window.Q = Quintus({development: true})
 		this.add('2d, animation, tween');
 				// Write event handlers to respond hook into behaviors
 
-			this.on("hit.sprite",function(collision) {
-					if(collision.obj.isA("Player")) {
-						Q.audio.play("coin.mp3");
-						this.play("catch");
-						this.p.vy= -200;
-						collision.obj.p.score += 1;
-					}	
+			this.on("hit.sprite", function (collision) {
+				if (collision.obj.isA("Player") && !this.touched) {
+					this.touched = true;
+					Q.audio.play("coin.mp3");
+					this.animate({y: p.y-34}, 0.2, Q.Easing.Linear, {callback: this.destroy});
+					collision.obj.score += 1;
+				}
 			});
 		},
-		step:function(dt){
-			if(this.p.y < 200)
-				this.destroy();
+		step: function (dt) {
+			this.play("catch");
 		}
 	});
 
@@ -129,16 +129,15 @@ var Q = window.Q = Quintus({development: true})
 			this._super(p, { 
 				sprite: "bloopa_anim",
 				sheet: 'bloopa',
-				vy: -150,
+				vy: -200,
 				gravity:0 }); //gravity: 0
 
-				this.add('2d, bump, aiBounce, animation, Enemy');
-			/*
+				this.add('2d, bump, aiBounce, animation');
+			
 				this.on("bump.left, bump.right,bump.bottom",function(collision) {
 					if(collision.obj.isA("Player")) {
 						Q.audio.play("music_die.mp3");
 						Q.audio.stop("music_main.mp3");
-
 						Q.stageScene("endGame",1, { label: "Game Over" });
 						collision.obj.destroy();
 					}
@@ -150,9 +149,7 @@ var Q = window.Q = Quintus({development: true})
 						this.die();
 						collision.obj.p.vy = -300;
 					}
-				});*/
-
-				this.on("dead", this, "animation");
+				});
 			},
 
 			step: function(dt){
@@ -171,23 +168,22 @@ var Q = window.Q = Quintus({development: true})
 				this.play("walk");
 			}, 
 
-/*
 			die: function(){
 				this.p.vy = 200;
 				this.play("die");
-			}*/
+			}
 		});
 	
 	// Create the GOOMBA class to add in some baddies
 	Q.Sprite.extend("Goomba",{
 		init: function(p) {
 			this._super(p, { 
-				sprite: "goomba_anim", 
+				sprite: "goomba_anim",
 				sheet: 'goomba', 
 				vx: 100 });
 
-				this.add('2d, bump, aiBounce, animation, Enemy');
-				/*
+				this.add('2d, bump, aiBounce,animation');
+				
 				this.on("bump.left,bump.right",function(collision) {
 					if(collision.obj.isA("Player")) {
 						Q.audio.play("music_die.mp3");
@@ -206,54 +202,20 @@ var Q = window.Q = Quintus({development: true})
 						collision.obj.p.vy = -100;
 						this.destroy();
 					}
-				});*/
+				});
 			},
 
 			step: function(dt){
 				this.play("walk");
 			},
-/*
+
 			die: function(){
 				this.p.vy = 200;
 				this.play("die");
-			}*/
+			}
 
 	});
 
-
-	//Componente que tienen en común todos los enemigos
-	Q.component("Enemy",{
-		init: function(p) {
-			
-				this.on("bump.left, bump.right,bump.bottom",function(collision) {
-					if(collision.obj.isA("Player")) {
-						Q.audio.play("music_die.mp3");
-						Q.audio.stop("music_main.mp3");
-						Q.stageScene("endGame",1, { label: "Game Over" });
-						collision.obj.destroy();
-					}
-				});
-				
-				this.on("bump.top",function(collision) {
-					if(collision.obj.isA("Player")) {
-						collision.obj.p.score += 5;
-						this.animation();
-					}
-				});
-
-				this.entity.on("stopAnimation", this.entity, "die");
-			},
-
-			extend: {
-				animation: function(){
-					this.play("die");
-				}, 
-
-				die: function(){
-					this.destroy();
-				}
-			}
-		});
 
 	// ## Princess Sprite, no se muestra
 	Q.Sprite.extend("Princess",{
@@ -283,33 +245,34 @@ var Q = window.Q = Quintus({development: true})
 		stage.viewport.offsetX = -100;
 		stage.viewport.offsetY = 160;
 
-		Q.audio.play('music_main.mp3');
+		Q.audio.play('music_main.mp3', {loop: true});
 
 
-		stage.insert(new Q.Bloopa({x:300, y:525}));
-		stage.insert(new Q.Goomba({x:500, y:525}));
 
-		stage.insert(new Q.Goomba({x:1500, y:450}));
-		stage.insert(new Q.Princess({x:2000, y:350}));
+		stage.insert(new Q.Bloopa({ x: 300, y: 525 }));
+		stage.insert(new Q.Bloopa({ x: 340, y: 525 }));
+		stage.insert(new Q.Bloopa({ x: 380, y: 525 }));
 
-		stage.insert(new Q.Coin({x:450, y:450}));
-		stage.insert(new Q.Coin({x:470, y:450}));
-		stage.insert(new Q.Coin({x:500, y:450}));
+		stage.insert(new Q.Goomba({ x: 500, y: 525 }));
+		stage.insert(new Q.Goomba({ x: 1500, y: 450 }));
+		
+		stage.insert(new Q.Princess({ x: 2000, y: 350 }));
 
-		stage.insert(new Q.Coin({x:960, y:470}));
-		stage.insert(new Q.Coin({x:990, y:490}));
-		stage.insert(new Q.Coin({x:1020, y:490}));
-		stage.insert(new Q.Coin({x:1050, y:490}));
-		stage.insert(new Q.Coin({x:1080, y:470}));
+		stage.insert(new Q.Coin({ x: 420, y: 470 }));
+		stage.insert(new Q.Coin({ x: 460, y: 450 }));
+		stage.insert(new Q.Coin({ x: 500, y: 450 }));
 
-		stage.insert(new Q.Coin({x:1120, y:490}));
-		stage.insert(new Q.Coin({x:1150, y:470}));
-		stage.insert(new Q.Coin({x:1180, y:490}));
-		stage.insert(new Q.Coin({x:1210, y:470}));
+		stage.insert(new Q.Coin({ x: 940, y: 460 }));
+		stage.insert(new Q.Coin({ x: 974, y: 470 }));
+		stage.insert(new Q.Coin({ x: 1008, y: 470 }));
+		stage.insert(new Q.Coin({ x: 1042, y: 470 }));
+		stage.insert(new Q.Coin({ x: 1074, y: 460 }));
 
-		stage.insert(new Q.Coin({x:1400, y:400}));
-		stage.insert(new Q.Coin({x:1420, y:400}));
-		stage.insert(new Q.Coin({x:1440, y:400}));
+		stage.insert(new Q.Coin({ x: 1120, y: 470 }));
+		stage.insert(new Q.Coin({ x: 1150, y: 460 }));
+		stage.insert(new Q.Coin({ x: 1180, y: 470 }));
+		stage.insert(new Q.Coin({ x: 1210, y: 460 }));
+
 
 	});
 
@@ -372,24 +335,26 @@ var Q = window.Q = Quintus({development: true})
 
 	//Animacion de GOOMBA
 	Q.animations("goomba_anim", {
-		walk: { frames: [0,1], rate: 1/3,
+		walk: { frames: [0,1], rate: 1/15,
 					  flip: false, loop: true },
-		die: { frames: [2], rate: 0.5/3, loop: false, trigger: "stopAnimation" }
+		die: { frames: [2,3], rate: 0.5/3, loop: true }
 	});
 
 
 	//Animacion de BLOOPA
 	Q.animations("bloopa_anim", {
-		walk: { frames: [0,1], rate: 1/3,
+		walk: { frames: [0,1], rate: 1/5,
 					  flip: false, loop: true },
-		die: { frames: [2], rate: 1/3, loop: false, trigger: "stopAnimation" }
+		die: { frames: [2], loop: false }
 	});
 
 
 	//Animacion de COIN
 	Q.animations("coin_anim", {
-		catch: { frames: [0,1,2], rate: 0.5/3,
-					  flip: false, loop: true }
+		catch: {
+			frames: [0, 1, 2], rate: 0.5 / 3,
+			flip: false, loop: true
+		}
 	});
 
 
