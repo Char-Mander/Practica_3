@@ -245,7 +245,7 @@ var Q = window.Q = Quintus({development: true})
 		stage.viewport.offsetX = -100;
 		stage.viewport.offsetY = 160;
 
-		Q.audio.play('music_main.mp3');
+		Q.audio.play('music_main.mp3', {loop: true});
 
 
 
