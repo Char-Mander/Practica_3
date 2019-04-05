@@ -250,9 +250,12 @@ var Q = window.Q = Quintus({development: true})
 
 
 		stage.insert(new Q.Bloopa({ x: 300, y: 525 }));
-		stage.insert(new Q.Goomba({ x: 500, y: 525 }));
+		stage.insert(new Q.Bloopa({ x: 340, y: 525 }));
+		stage.insert(new Q.Bloopa({ x: 380, y: 525 }));
 
+		stage.insert(new Q.Goomba({ x: 500, y: 525 }));
 		stage.insert(new Q.Goomba({ x: 1500, y: 450 }));
+		
 		stage.insert(new Q.Princess({ x: 2000, y: 350 }));
 
 		stage.insert(new Q.Coin({ x: 420, y: 470 }));
