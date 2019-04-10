@@ -330,7 +330,7 @@ var Q = window.Q = Quintus({development: true})
 	Q.animations("goomba_anim", {
 		walk: { frames: [0,1], rate: 1/15,
 					  flip: false, loop: true },
-		die: { frames: [2,3], rate: 0.5/3, loop: true }
+		die: { frames: [2], rate: 0.5/3, loop: false }
 	});
 
 
