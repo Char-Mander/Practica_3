@@ -50,6 +50,8 @@ var Q = window.Q = Quintus({development: true})
 
 			this.on("hit.sprite",function(collision) {
 					if(collision.obj.isA("Princess")) {
+						this.vx = 0;
+						this.vy = 0;
 						Q.audio.stop('music_main.mp3');
                     	Q.audio.play('music_level_complete.mp3');
 						Q.stageScene("endGame",1, { label: "You Win!" });
@@ -58,16 +60,17 @@ var Q = window.Q = Quintus({development: true})
 		}, 
 		step: function(dt){
 
-			if(this.p.y > 530){ this.die(); } //Hay que ver como destruirlo despues de mostrar la animacion de muerte
-			else {
+			if(this.p.y > 700){
+			 	this.destroy();
+			 	Q.stageScene("endGame",1, { label: "Game Over" }); 
+			 } 
+			 else {
 				if( (this.p.vx > 0 && this.p.vy < 0) || (this.p.vx < 0 && this.p.vy < 0) || this.p.vy < 0){
 					this.play("jump_" + this.p.direction);
 				}else if(this.p.vy > 0){
 					this.play("smash_" + this.p.direction);
-				}else if(this.p.vx > 0) {
-					this.play("walk_right");
-				} else if(this.p.vx < 0) {
-					this.play("walk_left");
+				}else if(this.p.vx !== 0) {
+					this.play("walk_" + this.p.direction);
 				} else {
 					this.play("stand_" + this.p.direction);
 				}
@@ -77,8 +80,9 @@ var Q = window.Q = Quintus({development: true})
 		die: function(){
 				Q.audio.stop("music_main.mp3");
                 //Q.audio.play("music_die.mp3"); Para habilitarlo hay que destruirlo primero.
-                this.play("die");
+                //this.play("die");
 				//this.destroy();
+
 		}
 
 	});
@@ -87,6 +91,7 @@ var Q = window.Q = Quintus({development: true})
 	// ## Coin sprite
 	Q.Sprite.extend("Coin", {
 		init: function(p) {
+			this.touched = false;
 			this._super(p, { 
 				sheet: 'coin',
 				sprite: 'coin_anim', 
@@ -94,22 +99,20 @@ var Q = window.Q = Quintus({development: true})
 			});
 		
 
-		this.add('2d,animation');
+		this.add('2d, animation, tween');
 				// Write event handlers to respond hook into behaviors
 
-			this.on("hit.sprite",function(collision) {
-					if(collision.obj.isA("Player")) {
-						Q.audio.play("coin.mp3");
-						this.play("catch");
-						this.p.vy= -200;
-
-						collision.obj.score += 1;
-					}	
+			this.on("hit.sprite", function (collision) {
+				if (collision.obj.isA("Player") && !this.touched) {
+					this.touched = true;
+					Q.audio.play("coin.mp3");
+					this.animate({y: p.y-34, vy: p.vy -100}, 0.2, Q.Easing.Linear, {callback: this.destroy});
+					collision.obj.score += 1;
+				}
 			});
 		},
-		step:function(dt){
-			if(this.p.y < 200)
-				this.destroy();
+		step: function (dt) {
+			this.play("catch");
 		}
 	});
 
@@ -139,7 +142,6 @@ var Q = window.Q = Quintus({development: true})
 					if(collision.obj.isA("Player")) {
 						Q.audio.play("music_die.mp3");
 						Q.audio.stop("music_main.mp3");
-
 						Q.stageScene("endGame",1, { label: "Game Over" });
 						collision.obj.destroy();
 					}
@@ -247,33 +249,34 @@ var Q = window.Q = Quintus({development: true})
 		stage.viewport.offsetX = -100;
 		stage.viewport.offsetY = 160;
 
-		Q.audio.play('music_main.mp3');
+		Q.audio.play('music_main.mp3', {loop: true});
 
 
-		stage.insert(new Q.Bloopa({x:300, y:525}));
-		stage.insert(new Q.Goomba({x:500, y:525}));
 
-		stage.insert(new Q.Goomba({x:1500, y:450}));
-		stage.insert(new Q.Princess({x:2000, y:350}));
+		stage.insert(new Q.Bloopa({ x: 300, y: 525 }));
+		stage.insert(new Q.Bloopa({ x: 340, y: 525 }));
+		stage.insert(new Q.Bloopa({ x: 380, y: 525 }));
 
-		stage.insert(new Q.Coin({x:450, y:450}));
-		stage.insert(new Q.Coin({x:470, y:450}));
-		stage.insert(new Q.Coin({x:500, y:450}));
+		stage.insert(new Q.Goomba({ x: 500, y: 525 }));
+		stage.insert(new Q.Goomba({ x: 1500, y: 450 }));
+		
+		stage.insert(new Q.Princess({ x: 2000, y: 350 }));
 
-		stage.insert(new Q.Coin({x:960, y:470}));
-		stage.insert(new Q.Coin({x:990, y:490}));
-		stage.insert(new Q.Coin({x:1020, y:490}));
-		stage.insert(new Q.Coin({x:1050, y:490}));
-		stage.insert(new Q.Coin({x:1080, y:470}));
+		stage.insert(new Q.Coin({ x: 420, y: 470 }));
+		stage.insert(new Q.Coin({ x: 460, y: 450 }));
+		stage.insert(new Q.Coin({ x: 500, y: 450 }));
 
-		stage.insert(new Q.Coin({x:1120, y:490}));
-		stage.insert(new Q.Coin({x:1150, y:470}));
-		stage.insert(new Q.Coin({x:1180, y:490}));
-		stage.insert(new Q.Coin({x:1210, y:470}));
+		stage.insert(new Q.Coin({ x: 940, y: 460 }));
+		stage.insert(new Q.Coin({ x: 974, y: 470 }));
+		stage.insert(new Q.Coin({ x: 1008, y: 470 }));
+		stage.insert(new Q.Coin({ x: 1042, y: 470 }));
+		stage.insert(new Q.Coin({ x: 1074, y: 460 }));
 
-		stage.insert(new Q.Coin({x:1400, y:400}));
-		stage.insert(new Q.Coin({x:1420, y:400}));
-		stage.insert(new Q.Coin({x:1440, y:400}));
+		stage.insert(new Q.Coin({ x: 1120, y: 470 }));
+		stage.insert(new Q.Coin({ x: 1150, y: 460 }));
+		stage.insert(new Q.Coin({ x: 1180, y: 470 }));
+		stage.insert(new Q.Coin({ x: 1210, y: 460 }));
+
 
 	});
 
@@ -352,8 +355,10 @@ var Q = window.Q = Quintus({development: true})
 
 	//Animacion de COIN
 	Q.animations("coin_anim", {
-		catch: { frames: [0,1,2], rate: 0.5/3,
-					  flip: false, loop: true }
+		catch: {
+			frames: [0, 1, 2], rate: 0.5 / 3,
+			flip: false, loop: true
+		}
 	});
 
 
