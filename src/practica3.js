@@ -136,24 +136,8 @@ var Q = window.Q = Quintus({development: true})
 				vy: -200,
 				gravity:0 }); //gravity: 0
 
-				this.add('2d, bump, aiBounce, animation');
-			
-				this.on("bump.left, bump.right,bump.bottom",function(collision) {
-					if(collision.obj.isA("Player")) {
-						Q.audio.play("music_die.mp3");
-						Q.audio.stop("music_main.mp3");
-						Q.stageScene("endGame",1, { label: "Game Over" });
-						collision.obj.destroy();
-					}
-				});
+				this.add('2d, bump, aiBounce, animation, DefaultEnemy');
 				
-				this.on("bump.top",function(collision) {
-					if(collision.obj.isA("Player")) {
-						//this.destroy();
-						this.die();
-						collision.obj.p.vy = -300;
-					}
-				});
 			},
 
 			step: function(dt){
@@ -186,27 +170,9 @@ var Q = window.Q = Quintus({development: true})
 				sheet: 'goomba', 
 				vx: 100 });
 
-				this.add('2d, bump, aiBounce,animation');
-				
-				this.on("bump.left,bump.right",function(collision) {
-					if(collision.obj.isA("Player")) {
-						Q.audio.play("music_die.mp3");
-						Q.audio.stop("music_main.mp3");
-						
-						Q.stageScene("endGame",1, { label: "Game Over" });
-						collision.obj.destroy();
-					}
-				});
+				this.add('2d, bump, aiBounce, animation, DefaultEnemy');
 				
 				var finish = false;
-
-				this.on("bump.top",function(collision) {
-					if(collision.obj.isA("Player")) {
-						this.die();
-						collision.obj.p.vy = -100;
-						this.destroy();
-					}
-				});
 			},
 
 			step: function(dt){
@@ -219,6 +185,29 @@ var Q = window.Q = Quintus({development: true})
 			}
 
 	});
+
+	Q.component("DefaultEnemy", {
+		added: function(){
+			
+				this.entity.on("bump.left, bump.right,bump.bottom",function(collision) {
+					if(collision.obj.isA("Player")) {
+						Q.audio.play("music_die.mp3");
+						Q.audio.stop("music_main.mp3");
+						Q.stageScene("endGame",1, { label: "Game Over" });
+						collision.obj.destroy();WW
+					}
+				});
+				
+				this.entity.on("bump.top",function(collision) {
+					if(collision.obj.isA("Player")) {
+						this.destroy();
+						this.die();
+						collision.obj.p.vy = -300;
+					}
+				});
+		}
+	});
+
 
 
 	// ## Princess Sprite, no se muestra
