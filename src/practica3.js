@@ -42,7 +42,6 @@ var game = function () {
 				sheet: "marioR", // Setting a sprite sheet sets sprite width and height
 				x: 32, // You can also set additional properties that can
 				y: 32, // be overridden on object creation
-				died: false,
 				score: 0,
 			});
 
@@ -77,10 +76,13 @@ var game = function () {
 			}
 		},
 
+		startAnimation(){
+			this.play("die");
+		},
+
 		die: function () {
 			Q.audio.stop("music_main.mp3");
-			
-
+			this.destroy();
 		}
 
 	});
@@ -99,18 +101,23 @@ var game = function () {
 
 			this.add('2d, animation, tween');
 			// Write event handlers to respond hook into behaviors
-
+			if (!this.died) {
 			this.on("hit.sprite", function (collision) {
 				if (collision.obj.isA("Player") && !this.touched) {
 					this.touched = true;
 					Q.audio.play("coin.mp3");
 					this.animate({ y: p.y - 34, vy: p.vy - 100 }, 0.2, Q.Easing.Linear, { callback: this.destroy });
 					collision.obj.score += 1;
+					console.log(collision.obj.score);
 				}
 			});
+			}
 		},
+
 		step: function (dt) {
+			if(!this.touched){
 			this.play("catch");
+			}
 		}
 	});
 
@@ -127,7 +134,9 @@ var game = function () {
 
 	// Create the Enemy class to add in some baddies
 	Q.Sprite.extend("Bloopa", {
+
 		init: function (p) {
+			var died = false;
 			this._super(p, {
 				sprite: "bloopa_anim",
 				sheet: 'bloopa',
@@ -135,51 +144,9 @@ var game = function () {
 				gravity: 0
 			}); //gravity: 0
 
-			this.add('2d, bump, aiBounce, animation, tween, DefaultEnemy');
+			this.add('2d, bump, aiBounce, animation, tween');
 
-		},
-
-		step: function (dt) {
-			if (this.p.y > 550)
-				this.destroy();
-
-			if (this.p.y < 350) {
-				this.p.y = 350;
-				this.p.vy = 200;
-			}
-			else if (this.p.y > 525) {
-				this.p.vy = -200;
-				this.p.y = 525;
-			}
-
-			this.play("walk");
-		} 
-	});
-
-	// Create the GOOMBA class to add in some baddies
-	Q.Sprite.extend("Goomba", {
-		init: function (p) {
-			this._super(p, {
-				sprite: "goomba_anim",
-				sheet: 'goomba',
-				vx: 100
-			});
-
-			this.add('2d, bump, aiBounce, animation, tween, DefaultEnemy');
-
-			//var finish = false;
-		},
-
-		step: function (dt) {
-			this.play("walk");
-		}
-
-	});
-
-	Q.component("DefaultEnemy", {
-		added: function () {
-
-			this.entity.on("bump.left, bump.right,bump.bottom", function (collision) {
+			this.on("bump.left, bump.right,bump.bottom", function (collision) {
 				if (collision.obj.isA("Player")) {
 					Q.audio.play("music_die.mp3");
 					Q.audio.stop("music_main.mp3");
@@ -188,28 +155,150 @@ var game = function () {
 				}
 			});
 
-			this.entity.on("bump.top", function (collision) {
+			this.on("bump.top", function (collision, that) {
 				if (collision.obj.isA("Player")) {
-				//	this.destroy();
+					
 					collision.obj.p.vy = -300;
+					collision.obj.score += 5;
+					console.log(collision.obj.score);
+
 					this.startAnimation();
 					
+
 				}
 			});
+
+
+			this.on("endAnimation", this, "die");
+
+
 		},
-		extend: {
 
-			startAnimation: function(){
-				this.play("die");
-			},
+		step: function (dt) {
+			if (!this.died) {
+				if (this.p.y > 550)
+					this.destroy();
 
-			die: function () {
-				this.destroy();
+				if (this.p.y < 350) {
+					this.p.y = 350;
+					this.p.vy = 200;
+				}
+				else if (this.p.y > 525) {
+					this.p.vy = -200;
+					this.p.y = 525;
+				}
+
+				this.play("walk");
 			}
+		},
 
+		startAnimation: function () {
+			this.died = true;
+			this.play("die");
+
+		},
+
+		die: function () {
+			this.destroy();
 		}
 	});
 
+	// Create the GOOMBA class to add in some baddies
+	Q.Sprite.extend("Goomba", {
+		init: function (p) {
+			var died = false;
+			this._super(p, {
+				sprite: "goomba_anim",
+				sheet: 'goomba',
+				vx: 100
+			});
+
+			this.add('2d, bump, aiBounce, animation, tween');
+
+			this.on("bump.left, bump.right,bump.bottom", function (collision) {
+				if (collision.obj.isA("Player")) {
+					Q.audio.play("music_die.mp3");
+					Q.audio.stop("music_main.mp3");
+					Q.stageScene("endGame", 1, { label: "Game Over" });
+					collision.obj.destroy();
+				}
+			});
+
+			this.on("bump.top", function (collision, that) {
+				if (collision.obj.isA("Player")) {
+					collision.obj.p.vy = -300;
+					
+					collision.obj.score += 5;
+					console.log(collision.obj.score);
+					this.startAnimation();
+
+				}
+			});
+
+			this.on("endAnimation", this, "die");
+		},
+
+		step: function (dt) {
+			if (!this.died) {
+				this.play("walk");
+			}
+		},
+
+		startAnimation: function () {
+			this.died = true;
+			this.play("die");
+		},
+
+		die: function () {
+			this.destroy();
+		}
+
+
+	});
+	/*
+		Q.component("DefaultEnemy", {
+			added: function () {
+	
+				this.entity.on("bump.left, bump.right,bump.bottom", function (collision) {
+					if (collision.obj.isA("Player")) {
+						Q.audio.play("music_die.mp3");
+						Q.audio.stop("music_main.mp3");
+						Q.stageScene("endGame", 1, { label: "Game Over" });
+						collision.obj.destroy();
+					}
+				});
+	
+				this.entity.on("bump.top", function (collision, that) {
+					if (collision.obj.isA("Player")) {
+					//	this.destroy();
+						collision.obj.p.vy = -300;
+						this.startAnimation();
+						//this.play("die");
+						
+					}
+				});
+	
+				this.entity.die = function () {
+					console.log("Ha pasado por el destroy");
+					this.destroy();
+				}
+	
+				this.entity.on("endAnimation", this, function(){console.log("destroy")});
+			},
+			extend: {
+	
+				startAnimation: function(){
+					console.log("Va a pasar por el startAnimation");
+					this.play("die");
+					console.log("Ha pasado por el startAnimation");
+	
+				},
+				
+	
+	
+			}
+		});
+	*/
 
 
 	// ## Princess Sprite, no se muestra
@@ -346,7 +435,7 @@ var game = function () {
 			frames: [0, 1], rate: 1 / 15,
 			flip: false, loop: true
 		},
-		die: { frames: [2], loop: false, trigger: "die" }
+		die: { frames: [2], rate: 1 / 3, loop: false, trigger: "endAnimation" }
 	});
 
 
@@ -356,7 +445,7 @@ var game = function () {
 			frames: [0, 1], rate: 1 / 5,
 			flip: false, loop: true
 		},
-		die: { frames: [2], loop: false, trigger: "die"  }
+		die: { frames: [2], rate: 0.5 / 3, loop: false, trigger: "endAnimation" }
 	});
 
 
