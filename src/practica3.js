@@ -79,9 +79,7 @@ var game = function () {
 
 		die: function () {
 			Q.audio.stop("music_main.mp3");
-			//Q.audio.play("music_die.mp3"); Para habilitarlo hay que destruirlo primero.
-			//this.play("die");
-			//this.destroy();
+			
 
 		}
 
@@ -137,7 +135,7 @@ var game = function () {
 				gravity: 0
 			}); //gravity: 0
 
-			this.add('2d, bump, aiBounce, animation, DefaultEnemy');
+			this.add('2d, bump, aiBounce, animation, tween, DefaultEnemy');
 
 		},
 
@@ -155,12 +153,7 @@ var game = function () {
 			}
 
 			this.play("walk");
-		},
-
-		die: function () {
-			this.p.vy = 200;
-			this.play("die");
-		}
+		} 
 	});
 
 	// Create the GOOMBA class to add in some baddies
@@ -172,9 +165,9 @@ var game = function () {
 				vx: 100
 			});
 
-			this.add('2d, bump, aiBounce, animation, DefaultEnemy');
+			this.add('2d, bump, aiBounce, animation, tween, DefaultEnemy');
 
-			var finish = false;
+			//var finish = false;
 		},
 
 		step: function (dt) {
@@ -197,16 +190,17 @@ var game = function () {
 
 			this.entity.on("bump.top", function (collision) {
 				if (collision.obj.isA("Player")) {
-					this.destroy();
-					this.die();
+				//	this.destroy();
 					collision.obj.p.vy = -300;
+					this.startAnimation();
+					
 				}
 			});
 		},
 		extend: {
 
 			startAnimation: function(){
-
+				this.play("die");
 			},
 
 			die: function () {
@@ -352,7 +346,7 @@ var game = function () {
 			frames: [0, 1], rate: 1 / 15,
 			flip: false, loop: true
 		},
-		die: { frames: [2], rate: 0.5 / 3, loop: false }
+		die: { frames: [2], loop: false, trigger: "die" }
 	});
 
 
@@ -362,7 +356,7 @@ var game = function () {
 			frames: [0, 1], rate: 1 / 5,
 			flip: false, loop: true
 		},
-		die: { frames: [2], loop: false }
+		die: { frames: [2], loop: false, trigger: "die"  }
 	});
 
 
