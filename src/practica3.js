@@ -62,11 +62,8 @@ var game = function () {
 
 		},
 		step: function (dt) {
-			console.log(this.died);
 			if (!this.died) {
 				if (this.p.y > 700) {
-					//this.destroy();
-					//this.died = true;
 					this.startAnimation();
 					Q.stageScene("endGame", 1, { label: "Game Over" });
 				}
@@ -97,12 +94,8 @@ var game = function () {
 
 		fall: function () {
 			this.stage.unfollow();
-			this.animate({ y: this.p.y + 300, vy: this.p.vy - 50 }, 1.5, Q.Easing.Linear, { callback: this.destroy });
+			this.animate({ y: this.p.y + 400, vy: this.p.vy - 50 }, 1.5, Q.Easing.Linear, { callback: function(){this.destroy();} });
 
-		},
-
-		destroy: function () {
-			this.destroy();
 		}
 
 	});
@@ -127,8 +120,7 @@ var game = function () {
 						this.touched = true;
 						Q.audio.play("coin.mp3");
 						this.animate({ y: p.y - 34, vy: p.vy - 100 }, 0.2, Q.Easing.Linear, { callback: this.destroy });
-						collision.obj.score += 1;
-						//console.log(collision.obj.score);
+						Q.state.inc("score", 1);
 					}
 				});
 			}
@@ -177,13 +169,9 @@ var game = function () {
 
 			this.on("bump.top", function (collision, that) {
 				if (collision.obj.isA("Player")) {
-
 					collision.obj.p.vy = -300;
-					collision.obj.score += 5;
-				//	console.log(collision.obj.score);
+					Q.state.inc("score", 5);
 					this.startAnimation();
-
-
 				}
 			});
 
@@ -195,8 +183,6 @@ var game = function () {
 
 		step: function (dt) {
 			if (!this.died) {
-				if (this.p.y > 550)
-					this.destroy();
 
 				if (this.p.y < 350) {
 					this.p.y = 350;
@@ -246,10 +232,8 @@ var game = function () {
 			this.on("bump.top", function (collision, that) {
 				if (collision.obj.isA("Player")) {
 					collision.obj.p.vy = -300;
-					collision.obj.score += 5;
-				//	console.log(collision.obj.score);
+					Q.state.inc("score", 5);
 					this.startAnimation();
-
 				}
 			});
 
@@ -287,6 +271,21 @@ var game = function () {
 	});
 
 
+	Q.UI.Text.extend("Score", {
+		init: function (p) {
+			this._super({
+				label: "Score: 0",
+				x: 0,
+				y: 0
+			});
+			Q.state.on("change.score", this, "score");
+		},
+		score: function (score) {
+			this.p.label = "Score: " + score;
+		}
+	});
+
+
 
 
 	// ## Level1 scene
@@ -294,6 +293,7 @@ var game = function () {
 	Q.scene("level1", function (stage) {
 
 		Q.stageTMX("level.tmx", stage);
+
 
 		var player = stage.insert(new Q.Player({ x: 150, y: 380 }));
 		stage.add("viewport").centerOn(160, 360);
@@ -331,6 +331,8 @@ var game = function () {
 		stage.insert(new Q.Coin({ x: 1210, y: 460 }));
 
 
+
+
 	});
 
 
@@ -348,11 +350,29 @@ var game = function () {
 
 		button.on("click", function () {
 			Q.clearStages();
+			Q.state.reset({ score: 0 });
 			Q.stageScene('level1');
+			Q.stageScene('scoreInfo', 1);
 		});
 
 		container.fit(20);
 	});
+
+	Q.scene('scoreInfo', function (stage) {
+		var container = stage.insert(new Q.UI.Container({
+			x: Q.width/2,
+            y: Q.height/10,
+            w: Q.width,
+			h: 20,
+		}));
+
+		var score = new Q.Score({
+			x: container.p.x / 2,
+			y: -container.p.y / 3
+		});
+		
+		container.insert(score);
+	})
 
 
 	Q.scene('endGame', function (stage) {
@@ -399,7 +419,7 @@ var game = function () {
 		jump_left: { frames: [4], flip: "x" },
 		smash_right: { frames: [6, 7], rate: 1 / 15, loop: true, flip: false },
 		smash_left: { frames: [6, 7], rate: 1 / 15, loop: true, flip: "x" },
-		die: { frames: [12], flip: false, rate: 1/3, loop: false, trigger: "endAnimation" }
+		die: { frames: [12], flip: false, rate: 1 / 3, loop: false, trigger: "endAnimation" }
 	});
 
 	//Animacion de GOOMBA
