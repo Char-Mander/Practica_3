@@ -1,4 +1,4 @@
-# Practica_3
+# Practica_3 : Realizada por Laura Jiménez Fernández y Beatriz Villegas Sánchez
 Super Mario Bros
 
 Se han implementado las siguientes funcionalidades:
