@@ -71,12 +71,15 @@ var game = function () {
 				else {
 
 					if ((this.p.vx > 0 && this.p.vy < 0) || (this.p.vx < 0 && this.p.vy < 0) || this.p.vy < 0) {
+						this.p.vy += -6;
 						this.play("jump_" + this.p.direction);
 					} else if (this.p.vy > 0) {
 						this.play("smash_" + this.p.direction);
 					} else if (this.p.vx !== 0) {
 						this.play("walk_" + this.p.direction);
 					} else {
+						//console.log("COORDENADAS x: " + this.p.x + "y :" + this.p.y);
+
 						this.play("stand_" + this.p.direction);
 					}
 
@@ -120,7 +123,7 @@ var game = function () {
 					if (collision.obj.isA("Player") && !this.touched) {
 						this.touched = true;
 						Q.audio.play("coin.mp3");
-						this.animate({ y: p.y - 34, vy: p.vy - 100 }, 0.2, Q.Easing.Linear, { callback: this.destroy });
+						this.animate({ y: p.y - 34, vy: p.vy - 200 }, 0.1, Q.Easing.Linear, { callback: this.destroy });
 						Q.state.inc("score", 1);
 					}
 				});
@@ -270,7 +273,7 @@ var game = function () {
 		}
 	});
 
-	Q.loadTMX("level.tmx", function () {
+	Q.loadTMX("ourlevel.tmx", function () {
 		Q.stageScene("level1");
 	});
 
@@ -295,7 +298,7 @@ var game = function () {
 	// ## Level1 scene
 	// Create a new scene called level 1
 	Q.scene("level1", function (stage) {
-		Q.stageTMX("level.tmx", stage);
+		Q.stageTMX("ourlevel.tmx", stage);
 
 
 		var player = stage.insert(new Q.Player({ x: 150, y: 380 }));
@@ -308,32 +311,63 @@ var game = function () {
 
 
 
-		stage.insert(new Q.Bloopa({ x: 300, y: 525 }));
-		stage.insert(new Q.Bloopa({ x: 340, y: 525 }));
-		stage.insert(new Q.Bloopa({ x: 380, y: 525 }));
+		stage.insert(new Q.Bloopa({ x: 660, y: 525 }));
+		stage.insert(new Q.Bloopa({ x: 730, y: 525 }));
+		stage.insert(new Q.Bloopa({ x: 790, y: 525 }));
+		stage.insert(new Q.Bloopa({ x: 860, y: 525 }));
+		stage.insert(new Q.Bloopa({ x: 940, y: 525 }));
+		stage.insert(new Q.Bloopa({ x: 985, y: 525 }));
+
+		stage.insert(new Q.Bloopa({ x: 2430, y: 450 }));
+		stage.insert(new Q.Bloopa({ x: 2570, y: 450 }));
+
 
 		stage.insert(new Q.Goomba({ x: 500, y: 525 }));
 		stage.insert(new Q.Goomba({ x: 1500, y: 450 }));
+		stage.insert(new Q.Goomba({ x: 1630, y: 400 }));
+		stage.insert(new Q.Goomba({ x: 1780, y: 400 }));
+		stage.insert(new Q.Goomba({ x: 1920, y: 400 }));
+		
 
-		stage.insert(new Q.Princess({ x: 2000, y: 350 }));
-
-		stage.insert(new Q.Coin({ x: 420, y: 470 }));
-		stage.insert(new Q.Coin({ x: 460, y: 450 }));
-		stage.insert(new Q.Coin({ x: 500, y: 450 }));
-
-		stage.insert(new Q.Coin({ x: 940, y: 460 }));
-		stage.insert(new Q.Coin({ x: 974, y: 470 }));
-		stage.insert(new Q.Coin({ x: 1008, y: 470 }));
-		stage.insert(new Q.Coin({ x: 1042, y: 470 }));
-		stage.insert(new Q.Coin({ x: 1074, y: 460 }));
-
-		stage.insert(new Q.Coin({ x: 1120, y: 470 }));
-		stage.insert(new Q.Coin({ x: 1150, y: 460 }));
-		stage.insert(new Q.Coin({ x: 1180, y: 470 }));
-		stage.insert(new Q.Coin({ x: 1210, y: 460 }));
+		stage.insert(new Q.Princess({ x: 3230, y: 200 }));
 
 
+		stage.insert(new Q.Coin({ x: 625, y: 400 }));
+		stage.insert(new Q.Coin({ x: 765, y: 400 }));
+		stage.insert(new Q.Coin({ x: 900, y: 400 }));
 
+		stage.insert(new Q.Coin({ x: 1040, y: 400 }));
+		stage.insert(new Q.Coin({ x: 1080, y: 370 }));
+		stage.insert(new Q.Coin({ x: 1120, y: 370 }));
+		stage.insert(new Q.Coin({ x: 1160, y: 400 }));
+
+
+
+		stage.insert(new Q.Coin({ x: 1510, y: 300 }));
+		stage.insert(new Q.Coin({ x: 1550, y: 300 }));
+		stage.insert(new Q.Coin({ x: 1590, y: 300 }));
+
+		stage.insert(new Q.Coin({ x: 1710, y: 300 }));
+		stage.insert(new Q.Coin({ x: 1850, y: 300 }));
+
+
+		stage.insert(new Q.Coin({ x: 1995, y: 300 }));
+
+		stage.insert(new Q.Coin({ x: 2020, y: 300 }));
+
+		stage.insert(new Q.Coin({ x: 1520, y: 450 }));
+		stage.insert(new Q.Coin({ x: 1550, y: 450 }));
+		stage.insert(new Q.Coin({ x: 1580, y: 450 }));
+
+		stage.insert(new Q.Coin({ x: 2130, y: 450 }));
+		stage.insert(new Q.Coin({ x: 2170, y: 400 }));
+		stage.insert(new Q.Coin({ x: 2210, y: 400 }));
+		stage.insert(new Q.Coin({ x: 2250, y: 450 }));
+
+		stage.insert(new Q.Coin({ x: 2700, y: 370 }));
+		stage.insert(new Q.Coin({ x: 2750, y: 370 }));
+		stage.insert(new Q.Coin({ x: 2800, y: 370 }));
+		stage.insert(new Q.Coin({ x: 2850, y: 370 }));
 
 	});
 
