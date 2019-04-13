@@ -36,50 +36,65 @@ var game = function () {
 	Q.Sprite.extend("Player", {
 
 		init: function (p) {
-
+			var died = false;
 			this._super(p, {
 				sprite: "mario_anim",
 				sheet: "marioR", // Setting a sprite sheet sets sprite width and height
 				x: 32, // You can also set additional properties that can
 				y: 32, // be overridden on object creation
-				died: false,
-				score: 0,
+				score: 0
 			});
 
-			this.add('2d, platformerControls, animation');
+			this.add('2d, platformerControls, animation, tween');
 
 			this.on("hit.sprite", function (collision) {
-				if (collision.obj.isA("Princess")) {
-					this.vx = 0;
-					this.vy = 0;
+				if (collision.obj.isA("Princess") && !this.died) {
+					this.died = true;
+					this.del('2d, platformerControls');
+					this.play("stand_right");
 					Q.audio.stop('music_main.mp3');
 					Q.audio.play('music_level_complete.mp3');
 					Q.stageScene("endGame", 1, { label: "You Win!" });
 				}
 			});
+
+			this.on("endAnimation", this, "fall");
+
 		},
 		step: function (dt) {
+			if (!this.died) {
+				if (this.p.y > 700) {
+					this.startAnimation();
+					Q.stageScene("endGame", 1, { label: "Game Over" });
+				}
+				else {
 
-			if (this.p.y > 700) {
-				this.destroy();
-				Q.stageScene("endGame", 1, { label: "Game Over" });
-			}
-			else {
-				if ((this.p.vx > 0 && this.p.vy < 0) || (this.p.vx < 0 && this.p.vy < 0) || this.p.vy < 0) {
-					this.play("jump_" + this.p.direction);
-				} else if (this.p.vy > 0) {
-					this.play("smash_" + this.p.direction);
-				} else if (this.p.vx !== 0) {
-					this.play("walk_" + this.p.direction);
-				} else {
-					this.play("stand_" + this.p.direction);
+					if ((this.p.vx > 0 && this.p.vy < 0) || (this.p.vx < 0 && this.p.vy < 0) || this.p.vy < 0) {
+						this.play("jump_" + this.p.direction);
+					} else if (this.p.vy > 0) {
+						this.play("smash_" + this.p.direction);
+					} else if (this.p.vx !== 0) {
+						this.play("walk_" + this.p.direction);
+					} else {
+						this.play("stand_" + this.p.direction);
+					}
+
 				}
 			}
+
 		},
 
-		die: function () {
+		startAnimation() {
+			this.died = true;
+			this.del('2d, platformerControls');
 			Q.audio.stop("music_main.mp3");
-			
+			Q.audio.play("music_die.mp3");
+			this.play("die");
+		},
+
+		fall: function () {
+			this.stage.unfollow();
+			this.animate({ y: this.p.y + 400, vy: this.p.vy - 50 }, 1.5, Q.Easing.Linear, { callback: function(){this.destroy();} });
 
 		}
 
@@ -99,18 +114,22 @@ var game = function () {
 
 			this.add('2d, animation, tween');
 			// Write event handlers to respond hook into behaviors
-
-			this.on("hit.sprite", function (collision) {
-				if (collision.obj.isA("Player") && !this.touched) {
-					this.touched = true;
-					Q.audio.play("coin.mp3");
-					this.animate({ y: p.y - 34, vy: p.vy - 100 }, 0.2, Q.Easing.Linear, { callback: this.destroy });
-					collision.obj.score += 1;
-				}
-			});
+			if (!this.died) {
+				this.on("hit.sprite", function (collision) {
+					if (collision.obj.isA("Player") && !this.touched) {
+						this.touched = true;
+						Q.audio.play("coin.mp3");
+						this.animate({ y: p.y - 34, vy: p.vy - 100 }, 0.2, Q.Easing.Linear, { callback: this.destroy });
+						Q.state.inc("score", 1);
+					}
+				});
+			}
 		},
+
 		step: function (dt) {
-			this.play("catch");
+			if (!this.touched) {
+				this.play("catch");
+			}
 		}
 	});
 
@@ -127,7 +146,9 @@ var game = function () {
 
 	// Create the Enemy class to add in some baddies
 	Q.Sprite.extend("Bloopa", {
+
 		init: function (p) {
+			var died = false;
 			this._super(p, {
 				sprite: "bloopa_anim",
 				sheet: 'bloopa',
@@ -135,82 +156,107 @@ var game = function () {
 				gravity: 0
 			}); //gravity: 0
 
-			this.add('2d, bump, aiBounce, animation, tween, DefaultEnemy');
+			this.add('2d, bump, aiBounce, animation, tween');
+
+			this.on("bump.left, bump.right,bump.bottom", function (collision) {
+				if (collision.obj.isA("Player")) {
+					Q.audio.play("music_die.mp3");
+					Q.audio.stop("music_main.mp3");
+					Q.stageScene("endGame", 1, { label: "Game Over" });
+					collision.obj.startAnimation();
+				}
+			});
+
+			this.on("bump.top", function (collision, that) {
+				if (collision.obj.isA("Player")) {
+					collision.obj.p.vy = -300;
+					Q.state.inc("score", 5);
+					this.startAnimation();
+				}
+			});
+
+
+			this.on("endAnimation", this, "die");
+
 
 		},
 
 		step: function (dt) {
-			if (this.p.y > 550)
-				this.destroy();
+			if (!this.died) {
 
-			if (this.p.y < 350) {
-				this.p.y = 350;
-				this.p.vy = 200;
-			}
-			else if (this.p.y > 525) {
-				this.p.vy = -200;
-				this.p.y = 525;
-			}
+				if (this.p.y < 350) {
+					this.p.y = 350;
+					this.p.vy = 200;
+				}
+				else if (this.p.y > 525) {
+					this.p.vy = -200;
+					this.p.y = 525;
+				}
 
-			this.play("walk");
-		} 
+				this.play("walk");
+			}
+		},
+
+		startAnimation: function () {
+			this.died = true;
+			this.play("die");
+
+		},
+
+		die: function () {
+			this.destroy();
+		}
 	});
 
 	// Create the GOOMBA class to add in some baddies
 	Q.Sprite.extend("Goomba", {
 		init: function (p) {
+			var died = false;
 			this._super(p, {
 				sprite: "goomba_anim",
 				sheet: 'goomba',
 				vx: 100
 			});
 
-			this.add('2d, bump, aiBounce, animation, tween, DefaultEnemy');
+			this.add('2d, bump, aiBounce, animation, tween');
 
-			//var finish = false;
-		},
-
-		step: function (dt) {
-			this.play("walk");
-		}
-
-	});
-
-	Q.component("DefaultEnemy", {
-		added: function () {
-
-			this.entity.on("bump.left, bump.right,bump.bottom", function (collision) {
+			this.on("bump.left, bump.right,bump.bottom", function (collision) {
 				if (collision.obj.isA("Player")) {
 					Q.audio.play("music_die.mp3");
 					Q.audio.stop("music_main.mp3");
 					Q.stageScene("endGame", 1, { label: "Game Over" });
-					collision.obj.destroy();
+					collision.obj.startAnimation();
 				}
 			});
 
-			this.entity.on("bump.top", function (collision) {
+			this.on("bump.top", function (collision, that) {
 				if (collision.obj.isA("Player")) {
-				//	this.destroy();
 					collision.obj.p.vy = -300;
+					Q.state.inc("score", 5);
 					this.startAnimation();
-					
 				}
 			});
+
+			this.on("endAnimation", this, "die");
 		},
-		extend: {
 
-			startAnimation: function(){
-				this.play("die");
-			},
-
-			die: function () {
-				this.destroy();
+		step: function (dt) {
+			if (!this.died) {
+				this.play("walk");
 			}
+		},
 
+		startAnimation: function () {
+			this.died = true;
+			this.play("die");
+		},
+
+		die: function () {
+			this.destroy();
 		}
+
+
 	});
-
-
 
 	// ## Princess Sprite, no se muestra
 	Q.Sprite.extend("Princess", {
@@ -225,6 +271,21 @@ var game = function () {
 	});
 
 
+	Q.UI.Text.extend("Score", {
+		init: function (p) {
+			this._super({
+				label: "Score: 0",
+				x: 0,
+				y: 0
+			});
+			Q.state.on("change.score", this, "score");
+		},
+		score: function (score) {
+			this.p.label = "Score: " + score;
+		}
+	});
+
+
 
 
 	// ## Level1 scene
@@ -232,6 +293,7 @@ var game = function () {
 	Q.scene("level1", function (stage) {
 
 		Q.stageTMX("level.tmx", stage);
+
 
 		var player = stage.insert(new Q.Player({ x: 150, y: 380 }));
 		stage.add("viewport").centerOn(160, 360);
@@ -269,6 +331,8 @@ var game = function () {
 		stage.insert(new Q.Coin({ x: 1210, y: 460 }));
 
 
+
+
 	});
 
 
@@ -286,11 +350,29 @@ var game = function () {
 
 		button.on("click", function () {
 			Q.clearStages();
+			Q.state.reset({ score: 0 });
 			Q.stageScene('level1');
+			Q.stageScene('scoreInfo', 1);
 		});
 
 		container.fit(20);
 	});
+
+	Q.scene('scoreInfo', function (stage) {
+		var container = stage.insert(new Q.UI.Container({
+			x: Q.width/2,
+            y: Q.height/10,
+            w: Q.width,
+			h: 20,
+		}));
+
+		var score = new Q.Score({
+			x: container.p.x / 2,
+			y: -container.p.y / 3
+		});
+		
+		container.insert(score);
+	})
 
 
 	Q.scene('endGame', function (stage) {
@@ -337,7 +419,7 @@ var game = function () {
 		jump_left: { frames: [4], flip: "x" },
 		smash_right: { frames: [6, 7], rate: 1 / 15, loop: true, flip: false },
 		smash_left: { frames: [6, 7], rate: 1 / 15, loop: true, flip: "x" },
-		die: { frames: [12], flip: false }
+		die: { frames: [12], flip: false, rate: 1 / 3, loop: false, trigger: "endAnimation" }
 	});
 
 	//Animacion de GOOMBA
@@ -346,7 +428,7 @@ var game = function () {
 			frames: [0, 1], rate: 1 / 15,
 			flip: false, loop: true
 		},
-		die: { frames: [2], loop: false, trigger: "die" }
+		die: { frames: [2], rate: 1 / 3, loop: false, trigger: "endAnimation" }
 	});
 
 
@@ -356,7 +438,7 @@ var game = function () {
 			frames: [0, 1], rate: 1 / 5,
 			flip: false, loop: true
 		},
-		die: { frames: [2], loop: false, trigger: "die"  }
+		die: { frames: [2], rate: 0.5 / 3, loop: false, trigger: "endAnimation" }
 	});
 
 
@@ -367,13 +449,5 @@ var game = function () {
 			flip: false, loop: true
 		}
 	});
-
-
-
-
-
-
-
-
 
 };
