@@ -13,7 +13,7 @@ var game = function () {
 		})
 		// And turn on default input controls and touch input (for UI)
 		.controls().touch().enableSound();
-
+		
 
 	// ## Asset Loading and Game Launch
 	Q.load(["tiles.png", "bg.png", "bloopa.png", "bloopa.json", "coin.png", "coin.json", "goomba.png", "goomba.json",
@@ -28,6 +28,7 @@ var game = function () {
 
 		});
 
+	var finalScore = 0;
 
 	//Carga de audios
 	Q.load(["coin.mp3", "music_die.mp3", "music_level_complete.mp3", "music_main.mp3", "kill_enemy.mp3"], function () { });
@@ -294,14 +295,12 @@ var game = function () {
 	// ## Level1 scene
 	// Create a new scene called level 1
 	Q.scene("level1", function (stage) {
-
 		Q.stageTMX("level.tmx", stage);
 
 
 		var player = stage.insert(new Q.Player({ x: 150, y: 380 }));
 		stage.add("viewport").centerOn(160, 360);
 		stage.add("viewport").follow(player, { x: true, y: false });
-		//Que le siga hasta cierto punto
 		stage.viewport.offsetX = -100;
 		stage.viewport.offsetY = 160;
 
@@ -348,7 +347,7 @@ var game = function () {
 
 		var button = container.insert(new Q.UI.Button({
 			x: 0, y: 0, fill: "#CCCCCC",
-			label: "Start Game"
+			label: "Start Game" 
 		}));
 
 		button.on("click", function () {
@@ -360,6 +359,7 @@ var game = function () {
 
 		container.fit(20);
 	});
+
 
 	Q.scene('scoreInfo', function (stage) {
 		var container = stage.insert(new Q.UI.Container({
@@ -374,8 +374,9 @@ var game = function () {
 			y: -container.p.y / 3
 		});
 		
+
 		container.insert(score);
-	})
+	});
 
 
 	Q.scene('endGame', function (stage) {
@@ -392,6 +393,11 @@ var game = function () {
 		var label = container.insert(new Q.UI.Text({
 			x: 10, y: -10 - button.p.h,
 			label: stage.options.label
+		}));
+
+		var labelScore = container.insert(new Q.UI.Text({
+			x: 10, y: button.p.h,
+			label: "Score : " + Q.state.p.score
 		}));
 
 		button.on("click", function () {
