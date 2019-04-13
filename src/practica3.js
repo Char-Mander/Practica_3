@@ -17,7 +17,7 @@ var game = function () {
 
 	// ## Asset Loading and Game Launch
 	Q.load(["tiles.png", "bg.png", "bloopa.png", "bloopa.json", "coin.png", "coin.json", "goomba.png", "goomba.json",
-		"mainTitle.png", "mario_small.png", "mario_small.json", "princess.png"], function () {
+		"mainTitle.png", "mario_small.png", "mario_small.json", "princess.png", "star.png"], function () {
 
 			Q.stageScene("startGame", 1);
 			// Or from a .json asset that defines sprite locations
@@ -138,6 +138,30 @@ var game = function () {
 	});
 
 
+	// ## Star sprite
+	Q.Sprite.extend("Star", {
+		init: function (p) {
+			this._super(p, {
+				asset: "star.png",
+				gravity: 0
+			});
+
+
+			this.add('2d');
+			// Write event handlers to respond hook into behaviors
+			if (!this.died) {
+				this.on("hit.sprite", function (collision) {
+					if (collision.obj.isA("Player")) {
+						Q.audio.play("coin.mp3");
+						Q.state.inc("score", 60);
+						this.destroy();
+					}
+				});
+			}
+		}
+	});
+
+
 	// Sprite del titulo
 	Q.Sprite.extend("Title", {
 		init: function (p) {
@@ -165,16 +189,13 @@ var game = function () {
 			this.on("bump.left, bump.right,bump.bottom", function (collision) {
 				if (collision.obj.isA("Player")) {
 
-					//Q.audio.play("music_die.mp3");
-
-					if(Q.state.p.lives == 1){
-						Q.stageScene("endGame", 1, { label: "Game Over" });
-					}else{
+					if(Q.state.p.lives > 1){
 						Q.stageScene("livesLeft", 1);
-					}
+					}else
+						Q.stageScene("endGame", 1, { label: "Game Over" });
 
-					Q.state.dec("lives", 1);
-
+					if(Q.state.p.lives > 0)
+						Q.state.dec("lives", 1);
 
 					collision.obj.startAnimation();
 					this.p.vy = -200;
@@ -237,14 +258,15 @@ var game = function () {
 
 			this.on("bump.left, bump.right,bump.bottom", function (collision) {
 				if (collision.obj.isA("Player")) {
-					//Q.audio.play("music_die.mp3");
 
-					if(Q.state.p.lives == 1){
-						Q.stageScene("endGame", 1, { label: "Game Over" });
-					}else{
+					if(Q.state.p.lives > 1){
 						Q.stageScene("livesLeft", 1);
-					}
-					Q.state.dec("lives", 1);
+					}else
+						Q.stageScene("endGame", 1, { label: "Game Over" });
+
+					if(Q.state.p.lives > 0)
+						Q.state.dec("lives", 1);
+					
 					collision.obj.startAnimation();
 				}
 			});
@@ -342,8 +364,6 @@ var game = function () {
 
 		Q.audio.play('music_main.mp3', { loop: true });
 
-
-
 		stage.insert(new Q.Bloopa({ x: 660, y: 525 }));
 		stage.insert(new Q.Bloopa({ x: 730, y: 525 }));
 		stage.insert(new Q.Bloopa({ x: 790, y: 525 }));
@@ -352,18 +372,16 @@ var game = function () {
 		stage.insert(new Q.Bloopa({ x: 985, y: 525 }));
 
 		stage.insert(new Q.Bloopa({ x: 2430, y: 450 }));
-		stage.insert(new Q.Bloopa({ x: 2570, y: 450 }));
-
+		stage.insert(new Q.Bloopa({ x: 2565, y: 450 }));
 
 		stage.insert(new Q.Goomba({ x: 500, y: 525 }));
 		stage.insert(new Q.Goomba({ x: 1500, y: 450 }));
 		stage.insert(new Q.Goomba({ x: 1630, y: 400 }));
 		stage.insert(new Q.Goomba({ x: 1780, y: 400 }));
 		stage.insert(new Q.Goomba({ x: 1920, y: 400 }));
-		
+		stage.insert(new Q.Goomba({ x: 1970, y: 450 }));
 
 		stage.insert(new Q.Princess({ x: 3230, y: 200 }));
-
 
 		stage.insert(new Q.Coin({ x: 625, y: 400 }));
 		stage.insert(new Q.Coin({ x: 765, y: 400 }));
@@ -374,15 +392,12 @@ var game = function () {
 		stage.insert(new Q.Coin({ x: 1120, y: 370 }));
 		stage.insert(new Q.Coin({ x: 1160, y: 400 }));
 
-
-
 		stage.insert(new Q.Coin({ x: 1510, y: 300 }));
 		stage.insert(new Q.Coin({ x: 1550, y: 300 }));
 		stage.insert(new Q.Coin({ x: 1590, y: 300 }));
 
 		stage.insert(new Q.Coin({ x: 1710, y: 300 }));
 		stage.insert(new Q.Coin({ x: 1850, y: 300 }));
-
 
 		stage.insert(new Q.Coin({ x: 1995, y: 300 }));
 
@@ -401,6 +416,8 @@ var game = function () {
 		stage.insert(new Q.Coin({ x: 2750, y: 370 }));
 		stage.insert(new Q.Coin({ x: 2800, y: 370 }));
 		stage.insert(new Q.Coin({ x: 2850, y: 370 }));
+
+		stage.insert(new Q.Star({ x: 1430, y: 500 }));
 
 	});
 
@@ -502,6 +519,7 @@ var game = function () {
 
 		button.on("click", function () {
 			Q.clearStages();
+			Q.audio.stop("music_main.mp3");
 			Q.stageScene('startGame', 1);
 		});
 
