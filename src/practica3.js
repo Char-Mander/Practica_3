@@ -5,7 +5,7 @@ var game = function () {
 	// the Sprites, Scenes, Input and 2D module. The 2D module
 	// includes the `TileLayer` class as well as the `2d` componet.
 	var Q = window.Q = Quintus({ development: true })
-		.include("Sprites, Scenes, Input, 2D, Anim, Touch, UI,Audio,TMX")
+	.include("Sprites, Scenes, Input, 2D, Anim, Touch, UI,Audio,TMX")
 		// Maximize this game to whatever the size of the browser is
 		.setup({ //maximize: true
 			width: 320, // Set the default width to 800 pixels
@@ -28,7 +28,6 @@ var game = function () {
 
 		});
 
-	var finalScore = 0;
 
 	//Carga de audios
 	Q.load(["coin.mp3", "music_die.mp3", "music_level_complete.mp3", "music_main.mp3", "kill_enemy.mp3"], function () { });
@@ -43,7 +42,6 @@ var game = function () {
 				sheet: "marioR", // Setting a sprite sheet sets sprite width and height
 				x: 32, // You can also set additional properties that can
 				y: 32, // be overridden on object creation
-				score: 0
 			});
 
 			this.add('2d, platformerControls, animation, tween');
@@ -64,9 +62,15 @@ var game = function () {
 		},
 		step: function (dt) {
 			if (!this.died) {
-				if (this.p.y > 560) {
-					this.startAnimation();
-					Q.stageScene("endGame", 1, { label: "Game Over" });
+				if (this.p.y > 550) {
+					this.startAnimation();	
+
+					if(Q.state.p.lives == 1){
+						Q.stageScene("endGame", 1, { label: "Game Over" });
+					}else
+						Q.stageScene("livesLeft", 1);
+
+					Q.state.dec("lives", 1);
 				}
 				else {
 
@@ -78,8 +82,6 @@ var game = function () {
 					} else if (this.p.vx !== 0) {
 						this.play("walk_" + this.p.direction);
 					} else {
-						//console.log("COORDENADAS x: " + this.p.x + "y :" + this.p.y);
-
 						this.play("stand_" + this.p.direction);
 					}
 
@@ -91,15 +93,13 @@ var game = function () {
 		startAnimation() {
 			this.died = true;
 			this.del('2d, platformerControls');
-			Q.audio.stop("music_main.mp3");
-			Q.audio.play("music_die.mp3");
 			this.play("die");
+			Q.audio.play("music_die.mp3");
 		},
 
 		fall: function () {
 			this.stage.unfollow();
 			this.animate({ y: this.p.y + 400, vy: this.p.vy - 50 }, 1.5, Q.Easing.Linear, { callback: function(){this.destroy();} });
-
 		}
 
 	});
@@ -164,9 +164,18 @@ var game = function () {
 
 			this.on("bump.left, bump.right,bump.bottom", function (collision) {
 				if (collision.obj.isA("Player")) {
-					Q.audio.stop("music_main.mp3");
-					Q.audio.play("music_die.mp3");
-					Q.stageScene("endGame", 1, { label: "Game Over" });
+
+					//Q.audio.play("music_die.mp3");
+
+					if(Q.state.p.lives == 1){
+						Q.stageScene("endGame", 1, { label: "Game Over" });
+					}else{
+						Q.stageScene("livesLeft", 1);
+					}
+
+					Q.state.dec("lives", 1);
+
+
 					collision.obj.startAnimation();
 					this.p.vy = -200;
 				}
@@ -228,9 +237,14 @@ var game = function () {
 
 			this.on("bump.left, bump.right,bump.bottom", function (collision) {
 				if (collision.obj.isA("Player")) {
-					Q.audio.play("music_die.mp3");
-					Q.audio.stop("music_main.mp3");
-					Q.stageScene("endGame", 1, { label: "Game Over" });
+					//Q.audio.play("music_die.mp3");
+
+					if(Q.state.p.lives == 1){
+						Q.stageScene("endGame", 1, { label: "Game Over" });
+					}else{
+						Q.stageScene("livesLeft", 1);
+					}
+					Q.state.dec("lives", 1);
 					collision.obj.startAnimation();
 				}
 			});
@@ -278,6 +292,7 @@ var game = function () {
 	});
 
 
+	//Label que muestra la puntuacion
 	Q.UI.Text.extend("Score", {
 		init: function (p) {
 			this._super({
@@ -292,6 +307,22 @@ var game = function () {
 		}
 	});
 
+	//Label que muestra las vidas
+	Q.UI.Text.extend("Lives", {
+		init: function (p) {
+			this._super({
+				label: "Lives: 3",
+				color: "white",
+				x: 0,
+				y: 0
+			});
+			Q.state.on("change.lives", this, "lives");
+		},
+		lives: function (lives) {
+			this.p.label = "Lives: " + lives;
+		}
+	});
+
 
 
 
@@ -299,6 +330,8 @@ var game = function () {
 	// Create a new scene called level 1
 	Q.scene("level1", function (stage) {
 		Q.stageTMX("ourlevel.tmx", stage);
+
+		Q.audio.stop("music_main.mp3");
 
 
 		var player = stage.insert(new Q.Player({ x: 150, y: 380 }));
@@ -386,9 +419,13 @@ var game = function () {
 
 		button.on("click", function () {
 			Q.clearStages();
-			Q.state.reset({ score: 0 });
+			Q.audio.stop("music_main.mp3");
+			//Q.state.reset({ score: 0 });
+			Q.state.set({ score: 0, lives: 3 });
 			Q.stageScene('level1');
 			Q.stageScene('scoreInfo', 1);
+			Q.stageScene('livesInfo', 2);
+
 		});
 
 		container.fit(20);
@@ -397,19 +434,48 @@ var game = function () {
 
 	Q.scene('scoreInfo', function (stage) {
 		var container = stage.insert(new Q.UI.Container({
-			x: Q.width/2,
-            y: Q.height/10,
-            w: Q.width,
+			x: 65,
+			y: 20,
+			w: Q.width,
 			h: 20,
 		}));
 
 		var score = new Q.Score({
-			x: container.p.x / 2,
-			y: -container.p.y / 3
+			x: 0,
+			y: 0
 		});
 		
 
 		container.insert(score);
+	});
+
+	Q.scene('livesInfo', function (stage) {
+		var container = stage.insert(new Q.UI.Container({
+			x: 265,
+			y: 20,
+			w: Q.width,
+			h: 20,
+		}));
+
+		var lives = new Q.Lives({
+			x: 0,
+			y: 0
+		});
+		
+
+		container.insert(lives);
+	});
+
+
+	//Escenario que se muestra cuando todavía le quedan vidas
+	Q.scene('livesLeft', function (stage) {
+			var life = Q.state.p.lives;
+
+			Q.clearStages();
+			Q.state.reset({ score: 0, lives: life });
+			Q.stageScene('level1');
+			Q.stageScene('scoreInfo', 1);
+			Q.stageScene('livesInfo', 2);
 	});
 
 
@@ -430,7 +496,7 @@ var game = function () {
 		}));
 
 		var labelScore = container.insert(new Q.UI.Text({
-			x: 10, y: button.p.h,
+			x: 10, y: button.p.h, color: "white",
 			label: "Score : " + Q.state.p.score
 		}));
 
