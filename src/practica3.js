@@ -30,7 +30,7 @@ var game = function () {
 
 
 	//Carga de audios
-	Q.load(["coin.mp3", "music_die.mp3", "music_level_complete.mp3", "music_main.mp3", "kill_enemy.mp3"], function () { });
+	Q.load(["coin.mp3", "music_die.mp3", "music_level_complete.mp3", "music_main.mp3", "kill_enemy.mp3", "item_rise.mp3"], function () { });
 
 	// ## Player Sprite
 	Q.Sprite.extend("Player", {
@@ -152,7 +152,7 @@ var game = function () {
 			if (!this.died) {
 				this.on("hit.sprite", function (collision) {
 					if (collision.obj.isA("Player")) {
-						Q.audio.play("coin.mp3");
+						Q.audio.play("item_rise.mp3");
 						Q.state.inc("score", 60);
 						this.destroy();
 					}
